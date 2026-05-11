@@ -18,7 +18,19 @@ Relay keeps that design lightweight, but adds the missing second half of the wor
 
 This is useful when you work across multiple coding-agent windows, hit context limits, pause a task, or want a fresh session to continue without re-explaining everything.
 
-## Install
+## Package Layout
+
+Relay uses a core skill plus thin platform adapters:
+
+- `skills/relay/SKILL.md`: canonical Relay behavior.
+- `.claude-plugin/plugin.json`: Claude Code plugin metadata.
+- `commands/relay.md`: Claude Code slash-command wrapper.
+- `adapters/codex/`: Codex prompt-command fallback.
+- `adapters/opencode/`: OpenCode skill and command wrappers.
+
+The adapters are intentionally thin. They point back to the canonical Relay skill instead of duplicating product behavior.
+
+## Install: Claude Code
 
 This repository is packaged with three discovery surfaces:
 
@@ -26,7 +38,7 @@ This repository is packaged with three discovery surfaces:
 - `commands/relay.md`: exposes a stable `/relay` command wrapper.
 - `skills/relay/SKILL.md`: contains the full Relay behavior.
 
-For Claude Code plugin-style installs, install this repository as a plugin so `.claude-plugin/plugin.json` can register `skills/`.
+For Claude Code plugin-style installs, install this repository as a plugin so `.claude-plugin/plugin.json` can register the package.
 
 For manual skill installs, copy this directory into your coding agent's skills directory:
 
@@ -40,7 +52,61 @@ For manual slash-command installs, copy this command wrapper into your coding ag
 commands/relay.md
 ```
 
-Different coding agents use different plugin, skill, and command locations. If your tool expects a different directory layout, copy `skills/relay/SKILL.md` and `commands/relay.md` into the equivalent locations for that tool.
+Different Claude Code versions and installation modes may expose plugin skills as namespaced commands. If you install Relay as a plugin, check both `/relay` and any namespaced Relay entry shown in your slash-command menu.
+
+## Install: Codex
+
+Codex custom prompts are deprecated in favor of skills, but they remain a practical fallback when you want an explicit command-like entrypoint in the Codex CLI.
+
+Copy the Codex prompt adapter to:
+
+```text
+~/.codex/prompts/relay.md
+```
+
+Then restart Codex or start a new Codex session.
+
+Invoke it as:
+
+```text
+/prompts:relay pass
+```
+
+See `adapters/codex/README.md` for details.
+
+## Install: OpenCode
+
+OpenCode treats skills and slash commands as separate configuration surfaces.
+
+For skill discovery, copy:
+
+```text
+adapters/opencode/skills/relay/
+```
+
+to one of:
+
+```text
+~/.config/opencode/skills/relay/
+.opencode/skills/relay/
+```
+
+For an explicit `/relay` command, copy:
+
+```text
+adapters/opencode/command/relay.md
+```
+
+to one of:
+
+```text
+~/.config/opencode/command/relay.md
+.opencode/command/relay.md
+```
+
+Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. If `/relay` does not appear, install the command globally and restart OpenCode.
+
+See `adapters/opencode/README.md` for details.
 
 ## If `/relay` Does Not Appear
 
@@ -48,11 +114,13 @@ If installation succeeds but `/relay` is not listed, your runtime may not auto-e
 
 Use one of these fixes:
 
-1. Install the repository as a Claude Code plugin so `.claude-plugin/plugin.json` is discovered.
-2. Manually copy `commands/relay.md` into your commands directory.
-3. Manually copy `skills/relay/` into your skills directory, then restart the agent runtime.
+1. Confirm you installed the adapter for your actual agent runtime.
+2. Restart the runtime so skills, prompts, or commands are reloaded.
+3. For Claude Code, try plugin install or manually copy `commands/relay.md`.
+4. For Codex, use `/prompts:relay` rather than plain `/relay` unless your Codex setup maps it differently.
+5. For OpenCode, install both the skill and command adapter; if project-local commands do not load, install the command globally.
 
-The command wrapper is intentionally thin. It exists so `/relay` has a stable user-facing entrypoint even when skill discovery behavior differs across runtimes.
+The command wrappers are intentionally thin. They exist so Relay has stable user-facing entrypoints where each runtime supports them, while `skills/relay/SKILL.md` remains the single canonical behavior definition.
 
 ## Usage
 

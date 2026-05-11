@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 - 2026-05-12
+
+- Add a cross-agent `adapters/` layout for Codex and OpenCode.
+- Add a Codex prompt-command fallback adapter at `adapters/codex/prompts/relay.md`.
+- Add OpenCode skill and command adapters under `adapters/opencode/`.
+- Update English and Chinese docs to explain platform-specific install paths and avoid promising one universal `/relay` command everywhere.
+
 ## 0.1.1 - 2026-05-12
 
 - Add `.claude-plugin/plugin.json` so plugin-aware runtimes can discover the Relay skill.
