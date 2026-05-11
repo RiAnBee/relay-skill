@@ -22,10 +22,12 @@ This is useful when you work across multiple coding-agent windows, hit context l
 
 Relay uses a core skill plus thin platform adapters:
 
-- `skills/relay/SKILL.md`: canonical Relay behavior.
+- `skills/relay/SKILL.md`: canonical smart Relay behavior.
+- `skills/relay-pass/SKILL.md`: explicit pass-mode behavior.
+- `skills/relay-pickup/SKILL.md`: explicit pickup-mode behavior.
 - `.claude-plugin/plugin.json`: Claude Code plugin metadata.
-- `commands/relay.md`: Claude Code slash-command wrapper.
-- `adapters/codex/`: Codex prompt-command fallback.
+- `commands/`: Claude Code slash-command wrappers.
+- `adapters/codex/`: Codex skills plus prompt-command fallback.
 - `adapters/opencode/`: OpenCode `skills/` and `commands/` wrappers.
 
 The adapters are intentionally thin. They point back to the canonical Relay skill instead of duplicating product behavior.
@@ -35,42 +37,48 @@ The adapters are intentionally thin. They point back to the canonical Relay skil
 This repository is packaged with three discovery surfaces:
 
 - `.claude-plugin/plugin.json`: registers the skill for plugin-aware installers.
-- `commands/relay.md`: exposes a stable `/relay` command wrapper.
-- `skills/relay/SKILL.md`: contains the full Relay behavior.
+- `commands/`: exposes `/relay`, `/relay-pass`, and `/relay-pickup` command wrappers.
+- `skills/`: contains the Relay behavior skills.
 
 For Claude Code plugin-style installs, install this repository as a plugin so `.claude-plugin/plugin.json` can register the package.
 
-For manual skill installs, copy this directory into your coding agent's skills directory:
+For manual skill installs, copy the skill directories into your Claude skills directory:
 
-```text
-skills/relay/
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.claude/skills/
 ```
 
-For manual slash-command installs, copy this command wrapper into your coding agent's commands directory:
+For manual slash-command installs, copy command wrappers into your Claude commands directory:
 
-```text
-commands/relay.md
+```bash
+mkdir -p ~/.claude/commands
+cp commands/relay*.md ~/.claude/commands/
 ```
 
 Different Claude Code versions and installation modes may expose plugin skills as namespaced commands. If you install Relay as a plugin, check both `/relay` and any namespaced Relay entry shown in your slash-command menu.
 
 ## Install: Codex
 
-Codex custom prompts are deprecated in favor of skills, but they remain a practical fallback when you want an explicit command-like entrypoint in the Codex CLI.
+Codex support is important enough to use native Codex skills first. Custom prompts are provided only as an explicit slash-command fallback.
 
-Copy the Codex prompt adapter to:
+Install the Codex skills:
 
-```text
-~/.codex/prompts/relay.md
+```bash
+mkdir -p ~/.codex/skills
+cp -R adapters/codex/skills/relay adapters/codex/skills/relay-pass adapters/codex/skills/relay-pickup ~/.codex/skills/
 ```
 
-Then restart Codex or start a new Codex session.
+Then restart Codex or start a new Codex session. You can trigger these from Codex's skill UI or by asking naturally, for example `Use the relay-pass skill`.
 
-Invoke it as:
+For explicit custom-prompt fallback commands, copy:
 
-```text
-/prompts:relay pass
+```bash
+mkdir -p ~/.codex/prompts
+cp adapters/codex/prompts/relay*.md ~/.codex/prompts/
 ```
+
+Then invoke `/prompts:relay`, `/prompts:relay-pass`, or `/prompts:relay-pickup`.
 
 See `adapters/codex/README.md` for details.
 
@@ -78,63 +86,37 @@ See `adapters/codex/README.md` for details.
 
 OpenCode treats skills and slash commands as separate configuration surfaces.
 
-For the simplest project-local install, clone this repository as `.opencode` inside the project where you run OpenCode:
+Never delete, overwrite, or replace an existing `.opencode` directory to install Relay. Treat `.opencode` as user/project-owned configuration.
 
-```bash
-git clone https://github.com/RiAnBee/relay-skill.git .opencode
-```
-
-This gives OpenCode the expected root layout:
-
-```text
-.opencode/commands/relay.md
-.opencode/skills/relay/SKILL.md
-```
-
-For a global install, copy or symlink the root `commands/` and `skills/` directories into your OpenCode config:
+For a global install, copy or symlink the root `commands/` and `skills/` entries into your OpenCode config:
 
 ```bash
 mkdir -p ~/.config/opencode/commands ~/.config/opencode/skills
 ln -s /path/to/relay-skill/commands/relay.md ~/.config/opencode/commands/relay.md
+ln -s /path/to/relay-skill/commands/relay-pass.md ~/.config/opencode/commands/relay-pass.md
+ln -s /path/to/relay-skill/commands/relay-pickup.md ~/.config/opencode/commands/relay-pickup.md
 ln -s /path/to/relay-skill/skills/relay ~/.config/opencode/skills/relay
+ln -s /path/to/relay-skill/skills/relay-pass ~/.config/opencode/skills/relay-pass
+ln -s /path/to/relay-skill/skills/relay-pickup ~/.config/opencode/skills/relay-pickup
 ```
 
 The `adapters/opencode/` directory is provided for users who prefer copying only the OpenCode-specific subset.
 
-For skill discovery, copy:
+For OpenCode adapter skill discovery, copy into your global OpenCode skills directory:
 
-```text
-adapters/opencode/skills/relay/
+```bash
+mkdir -p ~/.config/opencode/skills
+cp -R adapters/opencode/skills/relay adapters/opencode/skills/relay-pass adapters/opencode/skills/relay-pickup ~/.config/opencode/skills/
 ```
 
-to one of:
+For explicit `/relay*` commands, copy into your global OpenCode commands directory:
 
-```text
-~/.config/opencode/skills/relay/
-.opencode/skills/relay/
+```bash
+mkdir -p ~/.config/opencode/commands
+cp adapters/opencode/commands/relay*.md ~/.config/opencode/commands/
 ```
 
-For an explicit `/relay` command, copy:
-
-```text
-adapters/opencode/commands/relay.md
-```
-
-to one of:
-
-```text
-~/.config/opencode/commands/relay.md
-.opencode/commands/relay.md
-```
-
-Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. If `/relay` does not appear, install the command globally and restart OpenCode.
-
-For a project-local adapter-only install that mirrors popular OpenCode skill repositories, you can also clone or copy `adapters/opencode/` as `.opencode` so the layout is exactly:
-
-```text
-.opencode/commands/relay.md
-.opencode/skills/relay/SKILL.md
-```
+Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. Relay's documented OpenCode install path is global config to avoid modifying project-owned `.opencode` directories.
 
 See `adapters/opencode/README.md` for details.
 
@@ -146,54 +128,54 @@ Use one of these fixes:
 
 1. Confirm you installed the adapter for your actual agent runtime.
 2. Restart the runtime so skills, prompts, or commands are reloaded.
-3. For Claude Code, try plugin install or manually copy `commands/relay.md`.
-4. For Codex, use `/prompts:relay` rather than plain `/relay` unless your Codex setup maps it differently.
-5. For OpenCode, install both the skill and command adapter under `commands/` and `skills/`; if project-local commands do not load, install the command globally.
+3. For Claude Code, try plugin install or manually copy all `commands/relay*.md` and `skills/relay*/` entries.
+4. For Codex, install the `adapters/codex/skills/relay*/` skills first; use `/prompts:relay*` only as fallback.
+5. For OpenCode, install all `relay*` skill and command adapters under global `~/.config/opencode/commands/` and `~/.config/opencode/skills/`.
 
 The command wrappers are intentionally thin. They exist so Relay has stable user-facing entrypoints where each runtime supports them, while `skills/relay/SKILL.md` remains the single canonical behavior definition.
 
 ## Usage
 
-Pass the baton:
+Smart mode, infer whether to pass or pickup:
 
 ```text
-/relay pass
+/relay
+```
+
+Pass the baton without typing a subcommand:
+
+```text
+/relay-pass
 ```
 
 Pass the baton and tell the next session what to focus on:
 
 ```text
-/relay pass next session should continue experiment 3 and debug reward logging
+/relay-pass next session should continue experiment 3 and debug reward logging
 ```
 
 Persist the relay document inside the project instead of using a temporary file:
 
 ```text
-/relay pass --keep next session should continue experiment 3
+/relay-pass --keep next session should continue experiment 3
 ```
 
 Write a more detailed relay document:
 
 ```text
-/relay pass --full preserve the important original wording and decisions
+/relay-pass --full preserve the important original wording and decisions
 ```
 
 Pick up the newest likely relay document:
 
 ```text
-/relay pickup
+/relay-pickup
 ```
 
 Pick up a specific thread of work and continue immediately:
 
 ```text
-/relay pickup continue experiment 3 and debug reward logging
-```
-
-Let Relay infer the action:
-
-```text
-/relay
+/relay-pickup continue experiment 3 and debug reward logging
 ```
 
 ## Defaults

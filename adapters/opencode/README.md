@@ -6,16 +6,11 @@ OpenCode treats skills and slash commands as separate configuration surfaces. In
 
 ## Install Skill
 
-Copy the skill directory into one of OpenCode's skill locations:
+Copy the skill directories into OpenCode's global skill location:
 
-```text
-~/.config/opencode/skills/relay/
-```
-
-or, for a project-local install:
-
-```text
-.opencode/skills/relay/
+```bash
+mkdir -p ~/.config/opencode/skills
+cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.config/opencode/skills/
 ```
 
 The directory must contain:
@@ -26,51 +21,48 @@ SKILL.md
 
 ## Install Command
 
-Copy the command wrapper into your OpenCode commands location:
+Copy the command wrappers into your OpenCode global commands location:
+
+```bash
+mkdir -p ~/.config/opencode/commands
+cp commands/relay*.md ~/.config/opencode/commands/
+```
+
+Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. Relay's documented OpenCode install path is global config to avoid modifying project-owned `.opencode` directories.
+
+## Expected Global Layout
+
+After install, OpenCode should see this layout:
 
 ```text
 ~/.config/opencode/commands/relay.md
+~/.config/opencode/commands/relay-pass.md
+~/.config/opencode/commands/relay-pickup.md
+~/.config/opencode/skills/relay/SKILL.md
+~/.config/opencode/skills/relay-pass/SKILL.md
+~/.config/opencode/skills/relay-pickup/SKILL.md
 ```
 
-or, for a project-local install if supported by your OpenCode version:
-
-```text
-.opencode/commands/relay.md
-```
-
-Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. If `/relay` does not appear, install the command globally and restart OpenCode.
-
-## Project-Local Layout
-
-For a project-local install, the adapter can be copied or cloned as `.opencode` so OpenCode sees this exact layout:
-
-```text
-.opencode/commands/relay.md
-.opencode/skills/relay/SKILL.md
-```
-
-The full repository can also be cloned as `.opencode`, because its root contains `commands/` and `skills/` too:
-
-```bash
-git clone https://github.com/RiAnBee/relay-skill.git .opencode
-```
+Never delete, overwrite, or replace an existing `.opencode` directory to install Relay.
 
 ## Usage
 
 After installing the command wrapper, invoke:
 
 ```text
-/relay pass
+/relay
 ```
 
-or:
+or explicit modes:
 
 ```text
-/relay pickup
+/relay-pass
+/relay-pickup
 ```
 
 ## Notes
 
-- `skills/relay/SKILL.md` remains the canonical Relay behavior.
-- `commands/relay.md` is only a thin explicit slash-command entrypoint.
+- `skills/relay/SKILL.md` remains the canonical smart Relay behavior.
+- `skills/relay-pass/SKILL.md` and `skills/relay-pickup/SKILL.md` provide explicit modes.
+- `commands/relay*.md` files are thin explicit slash-command entrypoints.
 - OpenCode TUI/CLI command behavior can differ from GUI behavior in some versions.

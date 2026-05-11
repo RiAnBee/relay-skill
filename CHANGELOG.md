@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4 - 2026-05-12
+
+- Add explicit `/relay-pass` and `/relay-pickup` command wrappers alongside smart `/relay`.
+- Add `relay-pass` and `relay-pickup` skills for Claude Code-compatible direct skill invocation.
+- Add Codex-native `relay`, `relay-pass`, and `relay-pickup` skill adapters under `adapters/codex/skills/`.
+- Add Codex prompt fallback wrappers for `/prompts:relay-pass` and `/prompts:relay-pickup`.
+- Add OpenCode command and skill adapters for all three Relay entrypoints.
+- Remove guidance that suggests cloning over or replacing `.opencode`; `.opencode` must be treated as user/project-owned configuration.
+
 ## 0.1.3 - 2026-05-12
 
 - Fix OpenCode adapter paths from `command/` to the expected `commands/` directory.

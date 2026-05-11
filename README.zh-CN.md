@@ -22,10 +22,12 @@ Relay 保留这种轻量设计，但补上工作流的另一半：
 
 Relay 使用“核心 skill + 平台 adapter”的结构：
 
-- `skills/relay/SKILL.md`：Relay 的 canonical 行为定义。
+- `skills/relay/SKILL.md`：Relay 的智能 canonical 行为定义。
+- `skills/relay-pass/SKILL.md`：显式 pass 模式行为。
+- `skills/relay-pickup/SKILL.md`：显式 pickup 模式行为。
 - `.claude-plugin/plugin.json`：Claude Code plugin metadata。
-- `commands/relay.md`：Claude Code slash-command wrapper。
-- `adapters/codex/`：Codex prompt-command fallback。
+- `commands/`：Claude Code slash-command wrappers。
+- `adapters/codex/`：Codex skills 和 prompt-command fallback。
 - `adapters/opencode/`：OpenCode `skills/` 和 `commands/` wrappers。
 
 这些 adapter 都刻意保持很薄。它们会指回 canonical Relay skill，而不是复制产品行为。
@@ -35,42 +37,48 @@ Relay 使用“核心 skill + 平台 adapter”的结构：
 本仓库提供三层发现入口：
 
 - `.claude-plugin/plugin.json`：让支持 plugin 的安装器发现 Relay skill。
-- `commands/relay.md`：提供稳定的 `/relay` 命令 wrapper。
-- `skills/relay/SKILL.md`：包含完整的 Relay 行为。
+- `commands/`：提供 `/relay`、`/relay-pass`、`/relay-pickup` 命令 wrappers。
+- `skills/`：包含 Relay 行为 skills。
 
 如果使用 Claude Code plugin 风格安装，请把本仓库作为 plugin 安装，让 `.claude-plugin/plugin.json` 注册这个包。
 
-如果手动安装 skill，请把这个目录复制到你的 coding agent 的 skills 目录：
+如果手动安装 skill，请把 skill 目录复制到 Claude skills 目录：
 
-```text
-skills/relay/
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.claude/skills/
 ```
 
-如果手动安装 slash command，请把这个 command wrapper 复制到你的 coding agent 的 commands 目录：
+如果手动安装 slash command，请把 command wrappers 复制到 Claude commands 目录：
 
-```text
-commands/relay.md
+```bash
+mkdir -p ~/.claude/commands
+cp commands/relay*.md ~/.claude/commands/
 ```
 
 不同 Claude Code 版本和安装模式可能会把 plugin skills 暴露成 namespaced commands。如果你把 Relay 作为 plugin 安装，请同时检查 `/relay` 以及 slash-command 菜单里显示的 namespaced Relay 入口。
 
 ## 安装：Codex
 
-Codex custom prompts 已经被官方标记为 deprecated，推荐方向是 skills；但当你希望在 Codex CLI 里获得一个显式命令入口时，custom prompt 仍然是实用 fallback。
+Codex 非常重要，所以这里优先使用 Codex native skills。Custom prompts 只作为显式 slash-command fallback。
 
-把 Codex prompt adapter 复制到：
+安装 Codex skills：
 
-```text
-~/.codex/prompts/relay.md
+```bash
+mkdir -p ~/.codex/skills
+cp -R adapters/codex/skills/relay adapters/codex/skills/relay-pass adapters/codex/skills/relay-pickup ~/.codex/skills/
 ```
 
-然后重启 Codex 或开启新的 Codex session。
+然后重启 Codex 或开启新的 Codex session。你可以从 Codex 的 skill UI 触发，或用自然语言触发，例如 `Use the relay-pass skill`。
 
-调用方式是：
+如果需要显式 custom-prompt fallback commands，复制：
 
-```text
-/prompts:relay pass
+```bash
+mkdir -p ~/.codex/prompts
+cp adapters/codex/prompts/relay*.md ~/.codex/prompts/
 ```
+
+然后使用 `/prompts:relay`、`/prompts:relay-pass` 或 `/prompts:relay-pickup`。
 
 详见 `adapters/codex/README.md`。
 
@@ -78,63 +86,37 @@ Codex custom prompts 已经被官方标记为 deprecated，推荐方向是 skill
 
 OpenCode 把 skills 和 slash commands 视为两套不同配置。
 
-最简单的 project-local 安装方式，是在你运行 OpenCode 的项目里把本仓库 clone 成 `.opencode`：
+任何时候都不要为了安装 Relay 删除、覆盖、替换已有 `.opencode`。`.opencode` 是用户和项目自己的配置边界。
 
-```bash
-git clone https://github.com/RiAnBee/relay-skill.git .opencode
-```
-
-这样 OpenCode 会看到它期望的根目录结构：
-
-```text
-.opencode/commands/relay.md
-.opencode/skills/relay/SKILL.md
-```
-
-如果要全局安装，可以把根目录的 `commands/` 和 `skills/` 复制或 symlink 到 OpenCode config：
+如果要全局安装，可以把根目录的 `commands/` 和 `skills/` 条目复制或 symlink 到 OpenCode config：
 
 ```bash
 mkdir -p ~/.config/opencode/commands ~/.config/opencode/skills
 ln -s /path/to/relay-skill/commands/relay.md ~/.config/opencode/commands/relay.md
+ln -s /path/to/relay-skill/commands/relay-pass.md ~/.config/opencode/commands/relay-pass.md
+ln -s /path/to/relay-skill/commands/relay-pickup.md ~/.config/opencode/commands/relay-pickup.md
 ln -s /path/to/relay-skill/skills/relay ~/.config/opencode/skills/relay
+ln -s /path/to/relay-skill/skills/relay-pass ~/.config/opencode/skills/relay-pass
+ln -s /path/to/relay-skill/skills/relay-pickup ~/.config/opencode/skills/relay-pickup
 ```
 
 `adapters/opencode/` 目录是给只想复制 OpenCode-specific 子集的用户准备的。
 
-为了让 OpenCode 发现 skill，复制：
+为了让 OpenCode 发现 adapter skills，复制到全局 OpenCode skills 目录：
 
-```text
-adapters/opencode/skills/relay/
+```bash
+mkdir -p ~/.config/opencode/skills
+cp -R adapters/opencode/skills/relay adapters/opencode/skills/relay-pass adapters/opencode/skills/relay-pickup ~/.config/opencode/skills/
 ```
 
-到下面任一位置：
+为了获得显式 `/relay*` commands，复制到全局 OpenCode commands 目录：
 
-```text
-~/.config/opencode/skills/relay/
-.opencode/skills/relay/
+```bash
+mkdir -p ~/.config/opencode/commands
+cp adapters/opencode/commands/relay*.md ~/.config/opencode/commands/
 ```
 
-为了获得显式 `/relay` command，复制：
-
-```text
-adapters/opencode/commands/relay.md
-```
-
-到下面任一位置：
-
-```text
-~/.config/opencode/commands/relay.md
-.opencode/commands/relay.md
-```
-
-不同 OpenCode 版本和 UI 对 project-local commands、GUI custom commands 的加载行为可能不同。如果 `/relay` 没出现，请把 command 全局安装后重启 OpenCode。
-
-如果你希望用热门 OpenCode skill 仓库常见的 project-local adapter-only 方式安装，也可以把 `adapters/opencode/` clone 或复制成 `.opencode`，让目录结构精确变成：
-
-```text
-.opencode/commands/relay.md
-.opencode/skills/relay/SKILL.md
-```
+不同 OpenCode 版本和 UI 对 project-local commands、GUI custom commands 的加载行为可能不同。Relay 文档化的 OpenCode 安装路径是全局 config，避免修改项目自有的 `.opencode` 目录。
 
 详见 `adapters/opencode/README.md`。
 
@@ -146,54 +128,54 @@ adapters/opencode/commands/relay.md
 
 1. 确认你安装的是当前 agent runtime 对应的 adapter。
 2. 重启 runtime，让 skills、prompts 或 commands 被重新加载。
-3. 对 Claude Code，尝试 plugin install，或手动复制 `commands/relay.md`。
-4. 对 Codex，使用 `/prompts:relay`，不要默认假设 plain `/relay` 一定存在。
-5. 对 OpenCode，同时把 skill 和 command adapter 安装到 `skills/` 和 `commands/`；如果 project-local command 没加载，就改为全局安装 command。
+3. 对 Claude Code，尝试 plugin install，或手动复制所有 `commands/relay*.md` 和 `skills/relay*/` 条目。
+4. 对 Codex，优先安装 `adapters/codex/skills/relay*/`；`/prompts:relay*` 只作为 fallback。
+5. 对 OpenCode，把所有 `relay*` skill 和 command adapter 安装到全局 `~/.config/opencode/commands/` 和 `~/.config/opencode/skills/`。
 
 这些 command wrappers 刻意保持很薄。它们的作用是在各 runtime 支持的范围内提供稳定用户入口，同时让 `skills/relay/SKILL.md` 继续作为唯一 canonical 行为定义。
 
 ## 用法
 
-递出接力棒：
+智能模式，自动判断 pass 或 pickup：
 
 ```text
-/relay pass
+/relay
+```
+
+不需要手动输入 subcommand，直接递出接力棒：
+
+```text
+/relay-pass
 ```
 
 递出接力棒，并告诉下一个 session 要关注什么：
 
 ```text
-/relay pass next session should continue experiment 3 and debug reward logging
+/relay-pass next session should continue experiment 3 and debug reward logging
 ```
 
 把 relay 文档持久化到项目内，而不是使用临时文件：
 
 ```text
-/relay pass --keep next session should continue experiment 3
+/relay-pass --keep next session should continue experiment 3
 ```
 
 写一份更详细的 relay 文档：
 
 ```text
-/relay pass --full preserve the important original wording and decisions
+/relay-pass --full preserve the important original wording and decisions
 ```
 
 接起最新的可能相关 relay 文档：
 
 ```text
-/relay pickup
+/relay-pickup
 ```
 
 接起某条具体工作线，并立即继续：
 
 ```text
-/relay pickup continue experiment 3 and debug reward logging
-```
-
-让 Relay 自动判断动作：
-
-```text
-/relay
+/relay-pickup continue experiment 3 and debug reward logging
 ```
 
 ## 默认行为
