@@ -1,0 +1,12 @@
+{
+  "name": "relay-skill",
+  "description": "A lightweight pass/pickup handoff skill for coding agents.",
+  "version": "0.1.1",
+  "author": {
+    "name": "lidonglin"
+  },
+  "homepage": "https://github.com/RiAnBee/relay-skill",
+  "repository": "https://github.com/RiAnBee/relay-skill",
+  "license": "MIT",
+  "skills": "./skills"
+}

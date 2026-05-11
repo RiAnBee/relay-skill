@@ -20,13 +20,39 @@ This is useful when you work across multiple coding-agent windows, hit context l
 
 ## Install
 
-Copy this file into your coding agent's skills directory:
+This repository is packaged with three discovery surfaces:
+
+- `.claude-plugin/plugin.json`: registers the skill for plugin-aware installers.
+- `commands/relay.md`: exposes a stable `/relay` command wrapper.
+- `skills/relay/SKILL.md`: contains the full Relay behavior.
+
+For Claude Code plugin-style installs, install this repository as a plugin so `.claude-plugin/plugin.json` can register `skills/`.
+
+For manual skill installs, copy this directory into your coding agent's skills directory:
 
 ```text
-skills/relay/SKILL.md
+skills/relay/
 ```
 
-Different coding agents use different skill locations. If your tool expects a different directory layout, copy the contents of `skills/relay/SKILL.md` into the equivalent skill file for that tool.
+For manual slash-command installs, copy this command wrapper into your coding agent's commands directory:
+
+```text
+commands/relay.md
+```
+
+Different coding agents use different plugin, skill, and command locations. If your tool expects a different directory layout, copy `skills/relay/SKILL.md` and `commands/relay.md` into the equivalent locations for that tool.
+
+## If `/relay` Does Not Appear
+
+If installation succeeds but `/relay` is not listed, your runtime may not auto-expose skills as slash commands.
+
+Use one of these fixes:
+
+1. Install the repository as a Claude Code plugin so `.claude-plugin/plugin.json` is discovered.
+2. Manually copy `commands/relay.md` into your commands directory.
+3. Manually copy `skills/relay/` into your skills directory, then restart the agent runtime.
+
+The command wrapper is intentionally thin. It exists so `/relay` has a stable user-facing entrypoint even when skill discovery behavior differs across runtimes.
 
 ## Usage
 

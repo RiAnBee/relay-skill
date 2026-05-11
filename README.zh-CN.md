@@ -20,13 +20,39 @@ Relay 保留这种轻量设计，但补上工作流的另一半：
 
 ## 安装
 
-把这个文件复制到你的 coding agent 的 skills 目录：
+本仓库提供三层发现入口：
+
+- `.claude-plugin/plugin.json`：让支持 plugin 的安装器发现 Relay skill。
+- `commands/relay.md`：提供稳定的 `/relay` 命令 wrapper。
+- `skills/relay/SKILL.md`：包含完整的 Relay 行为。
+
+如果使用 Claude Code plugin 风格安装，请把本仓库作为 plugin 安装，让 `.claude-plugin/plugin.json` 注册 `skills/`。
+
+如果手动安装 skill，请把这个目录复制到你的 coding agent 的 skills 目录：
 
 ```text
-skills/relay/SKILL.md
+skills/relay/
 ```
 
-不同 coding agent 的 skill 目录可能不同。如果你的工具需要另一种目录结构，把 `skills/relay/SKILL.md` 的内容复制到对应的 skill 文件即可。
+如果手动安装 slash command，请把这个 command wrapper 复制到你的 coding agent 的 commands 目录：
+
+```text
+commands/relay.md
+```
+
+不同 coding agent 的 plugin、skill、command 目录可能不同。如果你的工具需要另一种目录结构，把 `skills/relay/SKILL.md` 和 `commands/relay.md` 复制到对应位置即可。
+
+## 如果 `/relay` 没有出现
+
+如果安装成功但 `/relay` 没有出现在命令列表里，说明你的运行时可能不会自动把 skill 暴露成 slash command。
+
+可以用下面任一方式修复：
+
+1. 把本仓库作为 Claude Code plugin 安装，让 `.claude-plugin/plugin.json` 被发现。
+2. 手动把 `commands/relay.md` 复制到 commands 目录。
+3. 手动把 `skills/relay/` 复制到 skills 目录，然后重启 agent runtime。
+
+这个 command wrapper 刻意保持很薄。它的作用是让 `/relay` 拥有稳定的用户入口，即使不同 runtime 的 skill discovery 行为不一致。
 
 ## 用法
 
