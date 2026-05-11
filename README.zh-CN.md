@@ -26,7 +26,7 @@ Relay 使用“核心 skill + 平台 adapter”的结构：
 - `.claude-plugin/plugin.json`：Claude Code plugin metadata。
 - `commands/relay.md`：Claude Code slash-command wrapper。
 - `adapters/codex/`：Codex prompt-command fallback。
-- `adapters/opencode/`：OpenCode skill 和 command wrappers。
+- `adapters/opencode/`：OpenCode `skills/` 和 `commands/` wrappers。
 
 这些 adapter 都刻意保持很薄。它们会指回 canonical Relay skill，而不是复制产品行为。
 
@@ -78,6 +78,29 @@ Codex custom prompts 已经被官方标记为 deprecated，推荐方向是 skill
 
 OpenCode 把 skills 和 slash commands 视为两套不同配置。
 
+最简单的 project-local 安装方式，是在你运行 OpenCode 的项目里把本仓库 clone 成 `.opencode`：
+
+```bash
+git clone https://github.com/RiAnBee/relay-skill.git .opencode
+```
+
+这样 OpenCode 会看到它期望的根目录结构：
+
+```text
+.opencode/commands/relay.md
+.opencode/skills/relay/SKILL.md
+```
+
+如果要全局安装，可以把根目录的 `commands/` 和 `skills/` 复制或 symlink 到 OpenCode config：
+
+```bash
+mkdir -p ~/.config/opencode/commands ~/.config/opencode/skills
+ln -s /path/to/relay-skill/commands/relay.md ~/.config/opencode/commands/relay.md
+ln -s /path/to/relay-skill/skills/relay ~/.config/opencode/skills/relay
+```
+
+`adapters/opencode/` 目录是给只想复制 OpenCode-specific 子集的用户准备的。
+
 为了让 OpenCode 发现 skill，复制：
 
 ```text
@@ -94,17 +117,24 @@ adapters/opencode/skills/relay/
 为了获得显式 `/relay` command，复制：
 
 ```text
-adapters/opencode/command/relay.md
+adapters/opencode/commands/relay.md
 ```
 
 到下面任一位置：
 
 ```text
-~/.config/opencode/command/relay.md
-.opencode/command/relay.md
+~/.config/opencode/commands/relay.md
+.opencode/commands/relay.md
 ```
 
 不同 OpenCode 版本和 UI 对 project-local commands、GUI custom commands 的加载行为可能不同。如果 `/relay` 没出现，请把 command 全局安装后重启 OpenCode。
+
+如果你希望用热门 OpenCode skill 仓库常见的 project-local adapter-only 方式安装，也可以把 `adapters/opencode/` clone 或复制成 `.opencode`，让目录结构精确变成：
+
+```text
+.opencode/commands/relay.md
+.opencode/skills/relay/SKILL.md
+```
 
 详见 `adapters/opencode/README.md`。
 
@@ -118,7 +148,7 @@ adapters/opencode/command/relay.md
 2. 重启 runtime，让 skills、prompts 或 commands 被重新加载。
 3. 对 Claude Code，尝试 plugin install，或手动复制 `commands/relay.md`。
 4. 对 Codex，使用 `/prompts:relay`，不要默认假设 plain `/relay` 一定存在。
-5. 对 OpenCode，同时安装 skill 和 command adapter；如果 project-local command 没加载，就改为全局安装 command。
+5. 对 OpenCode，同时把 skill 和 command adapter 安装到 `skills/` 和 `commands/`；如果 project-local command 没加载，就改为全局安装 command。
 
 这些 command wrappers 刻意保持很薄。它们的作用是在各 runtime 支持的范围内提供稳定用户入口，同时让 `skills/relay/SKILL.md` 继续作为唯一 canonical 行为定义。
 

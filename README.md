@@ -26,7 +26,7 @@ Relay uses a core skill plus thin platform adapters:
 - `.claude-plugin/plugin.json`: Claude Code plugin metadata.
 - `commands/relay.md`: Claude Code slash-command wrapper.
 - `adapters/codex/`: Codex prompt-command fallback.
-- `adapters/opencode/`: OpenCode skill and command wrappers.
+- `adapters/opencode/`: OpenCode `skills/` and `commands/` wrappers.
 
 The adapters are intentionally thin. They point back to the canonical Relay skill instead of duplicating product behavior.
 
@@ -78,6 +78,29 @@ See `adapters/codex/README.md` for details.
 
 OpenCode treats skills and slash commands as separate configuration surfaces.
 
+For the simplest project-local install, clone this repository as `.opencode` inside the project where you run OpenCode:
+
+```bash
+git clone https://github.com/RiAnBee/relay-skill.git .opencode
+```
+
+This gives OpenCode the expected root layout:
+
+```text
+.opencode/commands/relay.md
+.opencode/skills/relay/SKILL.md
+```
+
+For a global install, copy or symlink the root `commands/` and `skills/` directories into your OpenCode config:
+
+```bash
+mkdir -p ~/.config/opencode/commands ~/.config/opencode/skills
+ln -s /path/to/relay-skill/commands/relay.md ~/.config/opencode/commands/relay.md
+ln -s /path/to/relay-skill/skills/relay ~/.config/opencode/skills/relay
+```
+
+The `adapters/opencode/` directory is provided for users who prefer copying only the OpenCode-specific subset.
+
 For skill discovery, copy:
 
 ```text
@@ -94,17 +117,24 @@ to one of:
 For an explicit `/relay` command, copy:
 
 ```text
-adapters/opencode/command/relay.md
+adapters/opencode/commands/relay.md
 ```
 
 to one of:
 
 ```text
-~/.config/opencode/command/relay.md
-.opencode/command/relay.md
+~/.config/opencode/commands/relay.md
+.opencode/commands/relay.md
 ```
 
 Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. If `/relay` does not appear, install the command globally and restart OpenCode.
+
+For a project-local adapter-only install that mirrors popular OpenCode skill repositories, you can also clone or copy `adapters/opencode/` as `.opencode` so the layout is exactly:
+
+```text
+.opencode/commands/relay.md
+.opencode/skills/relay/SKILL.md
+```
 
 See `adapters/opencode/README.md` for details.
 
@@ -118,7 +148,7 @@ Use one of these fixes:
 2. Restart the runtime so skills, prompts, or commands are reloaded.
 3. For Claude Code, try plugin install or manually copy `commands/relay.md`.
 4. For Codex, use `/prompts:relay` rather than plain `/relay` unless your Codex setup maps it differently.
-5. For OpenCode, install both the skill and command adapter; if project-local commands do not load, install the command globally.
+5. For OpenCode, install both the skill and command adapter under `commands/` and `skills/`; if project-local commands do not load, install the command globally.
 
 The command wrappers are intentionally thin. They exist so Relay has stable user-facing entrypoints where each runtime supports them, while `skills/relay/SKILL.md` remains the single canonical behavior definition.
 

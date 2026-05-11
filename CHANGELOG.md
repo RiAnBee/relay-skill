@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-05-12
+
+- Fix OpenCode adapter paths from `command/` to the expected `commands/` directory.
+- Document the project-local `.opencode/commands/` and `.opencode/skills/` layout used by popular OpenCode skill repositories.
+- Mark Relay skills as `user-invocable: true` to align with direct slash-style skill invocation in runtimes that support it.
+
 ## 0.1.2 - 2026-05-12
 
 - Add a cross-agent `adapters/` layout for Codex and OpenCode.

@@ -1,5 +1,6 @@
 ---
 name: relay
+user-invocable: true
 description: Pass or pick up a lightweight handoff document so a fresh agent can continue the work. Use when ending a session, resuming prior work, or transferring context between coding-agent windows.
 argument-hint: "pass|pickup [focus, hint, or next task] [--keep|--persist] [--full]"
 ---
