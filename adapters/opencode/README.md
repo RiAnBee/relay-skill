@@ -1,12 +1,12 @@
 # Relay For OpenCode
 
-This adapter provides OpenCode-native skill and command entrypoints for Relay.
+This adapter is documentation only. Relay does not maintain OpenCode-specific skill or command copies.
 
-OpenCode treats skills and slash commands as separate configuration surfaces. Install the skill when you want the agent to discover Relay as reusable behavior. Install the command when you want an explicit `/relay` entrypoint in OpenCode TUI/CLI.
+OpenCode treats skills and slash commands as separate configuration surfaces. Install root `skills/` when you want the agent to discover Relay as reusable behavior. Install root `commands/` when you want explicit `/relay` entrypoints in OpenCode TUI/CLI.
 
 ## Install Skill
 
-Copy the skill directories into OpenCode's global skill location:
+From the repository root, copy the skill directories into OpenCode's global skill location:
 
 ```bash
 mkdir -p ~/.config/opencode/skills
@@ -21,7 +21,7 @@ SKILL.md
 
 ## Install Command
 
-Copy the command wrappers into your OpenCode global commands location:
+From the repository root, copy the command wrappers into your OpenCode global commands location:
 
 ```bash
 mkdir -p ~/.config/opencode/commands

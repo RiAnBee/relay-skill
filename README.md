@@ -20,17 +20,17 @@ This is useful when you work across multiple coding-agent windows, hit context l
 
 ## Package Layout
 
-Relay uses a core skill plus thin platform adapters:
+Relay uses one canonical skill set plus thin command entrypoints:
 
 - `skills/relay/SKILL.md`: canonical smart Relay behavior.
 - `skills/relay-pass/SKILL.md`: explicit pass-mode behavior.
 - `skills/relay-pickup/SKILL.md`: explicit pickup-mode behavior.
 - `.claude-plugin/plugin.json`: Claude Code plugin metadata.
-- `commands/`: Claude Code slash-command wrappers.
-- `adapters/codex/`: Codex skills plus prompt-command fallback.
-- `adapters/opencode/`: OpenCode `skills/` and `commands/` wrappers.
+- `commands/`: thin slash-command wrappers for runtimes that support command files.
+- `adapters/codex/`: Codex installation notes only.
+- `adapters/opencode/`: OpenCode installation notes only.
 
-The adapters are intentionally thin. They point back to the canonical Relay skill instead of duplicating product behavior.
+The adapters intentionally do not duplicate skills or commands. Install the same root `skills/` everywhere, and install root `commands/` only where the runtime supports slash-command files.
 
 ## Install: Claude Code
 
@@ -60,25 +60,16 @@ Different Claude Code versions and installation modes may expose plugin skills a
 
 ## Install: Codex
 
-Codex support is important enough to use native Codex skills first. Custom prompts are provided only as an explicit slash-command fallback.
+Codex support is important enough to use native Codex skills first. Relay no longer ships Codex-specific skill copies or prompt-command wrappers; the root `skills/` directory is the canonical install source.
 
 Install the Codex skills:
 
 ```bash
 mkdir -p ~/.codex/skills
-cp -R adapters/codex/skills/relay adapters/codex/skills/relay-pass adapters/codex/skills/relay-pickup ~/.codex/skills/
+cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.codex/skills/
 ```
 
 Then restart Codex or start a new Codex session. You can trigger these from Codex's skill UI or by asking naturally, for example `Use the relay-pass skill`.
-
-For explicit custom-prompt fallback commands, copy:
-
-```bash
-mkdir -p ~/.codex/prompts
-cp adapters/codex/prompts/relay*.md ~/.codex/prompts/
-```
-
-Then invoke `/prompts:relay`, `/prompts:relay-pass`, or `/prompts:relay-pickup`.
 
 See `adapters/codex/README.md` for details.
 
@@ -100,22 +91,6 @@ ln -s /path/to/relay-skill/skills/relay-pass ~/.config/opencode/skills/relay-pas
 ln -s /path/to/relay-skill/skills/relay-pickup ~/.config/opencode/skills/relay-pickup
 ```
 
-The `adapters/opencode/` directory is provided for users who prefer copying only the OpenCode-specific subset.
-
-For OpenCode adapter skill discovery, copy into your global OpenCode skills directory:
-
-```bash
-mkdir -p ~/.config/opencode/skills
-cp -R adapters/opencode/skills/relay adapters/opencode/skills/relay-pass adapters/opencode/skills/relay-pickup ~/.config/opencode/skills/
-```
-
-For explicit `/relay*` commands, copy into your global OpenCode commands directory:
-
-```bash
-mkdir -p ~/.config/opencode/commands
-cp adapters/opencode/commands/relay*.md ~/.config/opencode/commands/
-```
-
 Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. Relay's documented OpenCode install path is global config to avoid modifying project-owned `.opencode` directories.
 
 See `adapters/opencode/README.md` for details.
@@ -126,11 +101,11 @@ If installation succeeds but `/relay` is not listed, your runtime may not auto-e
 
 Use one of these fixes:
 
-1. Confirm you installed the adapter for your actual agent runtime.
+1. Confirm you installed the root `skills/` and, where supported, root `commands/` for your actual agent runtime.
 2. Restart the runtime so skills, prompts, or commands are reloaded.
 3. For Claude Code, try plugin install or manually copy all `commands/relay*.md` and `skills/relay*/` entries.
-4. For Codex, install the `adapters/codex/skills/relay*/` skills first; use `/prompts:relay*` only as fallback.
-5. For OpenCode, install all `relay*` skill and command adapters under global `~/.config/opencode/commands/` and `~/.config/opencode/skills/`.
+4. For Codex, install the root `skills/relay*/` directories and trigger them from the skill UI or natural language.
+5. For OpenCode, install root `skills/relay*/` and root `commands/relay*.md` under global `~/.config/opencode/`.
 
 The command wrappers are intentionally thin. They exist so Relay has stable user-facing entrypoints where each runtime supports them, while `skills/relay/SKILL.md` remains the single canonical behavior definition.
 

@@ -20,17 +20,17 @@ Relay 保留这种轻量设计，但补上工作流的另一半：
 
 ## 包结构
 
-Relay 使用“核心 skill + 平台 adapter”的结构：
+Relay 使用“一套 canonical skills + 很薄的 command 入口”的结构：
 
 - `skills/relay/SKILL.md`：Relay 的智能 canonical 行为定义。
 - `skills/relay-pass/SKILL.md`：显式 pass 模式行为。
 - `skills/relay-pickup/SKILL.md`：显式 pickup 模式行为。
 - `.claude-plugin/plugin.json`：Claude Code plugin metadata。
-- `commands/`：Claude Code slash-command wrappers。
-- `adapters/codex/`：Codex skills 和 prompt-command fallback。
-- `adapters/opencode/`：OpenCode `skills/` 和 `commands/` wrappers。
+- `commands/`：给支持 command 文件的 runtime 使用的薄 slash-command wrappers。
+- `adapters/codex/`：只保留 Codex 安装说明。
+- `adapters/opencode/`：只保留 OpenCode 安装说明。
 
-这些 adapter 都刻意保持很薄。它们会指回 canonical Relay skill，而不是复制产品行为。
+adapter 不再复制 skills 或 commands。所有 runtime 都安装同一套根目录 `skills/`；只有在 runtime 支持 slash-command 文件时，才额外安装根目录 `commands/`。
 
 ## 安装：Claude Code
 
@@ -60,25 +60,16 @@ cp commands/relay*.md ~/.claude/commands/
 
 ## 安装：Codex
 
-Codex 非常重要，所以这里优先使用 Codex native skills。Custom prompts 只作为显式 slash-command fallback。
+Codex 非常重要，所以这里优先使用 Codex native skills。Relay 不再维护 Codex-specific skill 副本或 prompt-command wrappers；根目录 `skills/` 是唯一 canonical 安装来源。
 
 安装 Codex skills：
 
 ```bash
 mkdir -p ~/.codex/skills
-cp -R adapters/codex/skills/relay adapters/codex/skills/relay-pass adapters/codex/skills/relay-pickup ~/.codex/skills/
+cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.codex/skills/
 ```
 
 然后重启 Codex 或开启新的 Codex session。你可以从 Codex 的 skill UI 触发，或用自然语言触发，例如 `Use the relay-pass skill`。
-
-如果需要显式 custom-prompt fallback commands，复制：
-
-```bash
-mkdir -p ~/.codex/prompts
-cp adapters/codex/prompts/relay*.md ~/.codex/prompts/
-```
-
-然后使用 `/prompts:relay`、`/prompts:relay-pass` 或 `/prompts:relay-pickup`。
 
 详见 `adapters/codex/README.md`。
 
@@ -100,22 +91,6 @@ ln -s /path/to/relay-skill/skills/relay-pass ~/.config/opencode/skills/relay-pas
 ln -s /path/to/relay-skill/skills/relay-pickup ~/.config/opencode/skills/relay-pickup
 ```
 
-`adapters/opencode/` 目录是给只想复制 OpenCode-specific 子集的用户准备的。
-
-为了让 OpenCode 发现 adapter skills，复制到全局 OpenCode skills 目录：
-
-```bash
-mkdir -p ~/.config/opencode/skills
-cp -R adapters/opencode/skills/relay adapters/opencode/skills/relay-pass adapters/opencode/skills/relay-pickup ~/.config/opencode/skills/
-```
-
-为了获得显式 `/relay*` commands，复制到全局 OpenCode commands 目录：
-
-```bash
-mkdir -p ~/.config/opencode/commands
-cp adapters/opencode/commands/relay*.md ~/.config/opencode/commands/
-```
-
 不同 OpenCode 版本和 UI 对 project-local commands、GUI custom commands 的加载行为可能不同。Relay 文档化的 OpenCode 安装路径是全局 config，避免修改项目自有的 `.opencode` 目录。
 
 详见 `adapters/opencode/README.md`。
@@ -126,11 +101,11 @@ cp adapters/opencode/commands/relay*.md ~/.config/opencode/commands/
 
 可以用下面任一方式修复：
 
-1. 确认你安装的是当前 agent runtime 对应的 adapter。
+1. 确认你已经安装根目录 `skills/`，并在 runtime 支持时安装根目录 `commands/`。
 2. 重启 runtime，让 skills、prompts 或 commands 被重新加载。
 3. 对 Claude Code，尝试 plugin install，或手动复制所有 `commands/relay*.md` 和 `skills/relay*/` 条目。
-4. 对 Codex，优先安装 `adapters/codex/skills/relay*/`；`/prompts:relay*` 只作为 fallback。
-5. 对 OpenCode，把所有 `relay*` skill 和 command adapter 安装到全局 `~/.config/opencode/commands/` 和 `~/.config/opencode/skills/`。
+4. 对 Codex，安装根目录 `skills/relay*/`，然后通过 skill UI 或自然语言触发。
+5. 对 OpenCode，把根目录 `skills/relay*/` 和 `commands/relay*.md` 安装到全局 `~/.config/opencode/`。
 
 这些 command wrappers 刻意保持很薄。它们的作用是在各 runtime 支持的范围内提供稳定用户入口，同时让 `skills/relay/SKILL.md` 继续作为唯一 canonical 行为定义。
 

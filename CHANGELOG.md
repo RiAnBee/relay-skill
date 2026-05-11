@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 - 2026-05-12
+
+- Simplify the cross-agent package around one canonical root `skills/` directory.
+- Remove Codex-specific and OpenCode-specific duplicate skill, command, and prompt copies from `adapters/`.
+- Keep `commands/relay*.md` as thin explicit slash-command entrypoints for runtimes that support command files.
+- Convert `adapters/codex/` and `adapters/opencode/` into documentation-only platform install notes.
+- Update English and Chinese docs to make root `skills/` the only behavior source.
+
 ## 0.1.4 - 2026-05-12
 
 - Add explicit `/relay-pass` and `/relay-pickup` command wrappers alongside smart `/relay`.
