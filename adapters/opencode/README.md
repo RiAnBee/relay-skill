@@ -10,7 +10,7 @@ From the repository root, copy the skill directories into OpenCode's global skil
 
 ```bash
 mkdir -p ~/.config/opencode/skills
-cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.config/opencode/skills/
+cp -R skills/relay skills/relay-pass skills/relay-pickup skills/relay-set ~/.config/opencode/skills/
 ```
 
 The directory must contain:
@@ -38,9 +38,11 @@ After install, OpenCode should see this layout:
 ~/.config/opencode/commands/relay.md
 ~/.config/opencode/commands/relay-pass.md
 ~/.config/opencode/commands/relay-pickup.md
+~/.config/opencode/commands/relay-set.md
 ~/.config/opencode/skills/relay/SKILL.md
 ~/.config/opencode/skills/relay-pass/SKILL.md
 ~/.config/opencode/skills/relay-pickup/SKILL.md
+~/.config/opencode/skills/relay-set/SKILL.md
 ```
 
 Never delete, overwrite, or replace an existing `.opencode` directory to install Relay.
@@ -58,11 +60,13 @@ or explicit modes:
 ```text
 /relay-pass
 /relay-pickup
+/relay-set
 ```
 
 ## Notes
 
 - `skills/relay/SKILL.md` remains the canonical smart Relay behavior.
 - `skills/relay-pass/SKILL.md` and `skills/relay-pickup/SKILL.md` provide explicit modes.
+- `skills/relay-set/SKILL.md` configures project defaults without duplicating pass/pickup logic.
 - `commands/relay*.md` files are thin explicit slash-command entrypoints.
 - OpenCode TUI/CLI command behavior can differ from GUI behavior in some versions.

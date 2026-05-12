@@ -10,7 +10,7 @@ From the repository root, copy the Relay skills into your Codex skills directory
 
 ```bash
 mkdir -p ~/.codex/skills
-cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.codex/skills/
+cp -R skills/relay skills/relay-pass skills/relay-pickup skills/relay-set ~/.codex/skills/
 ```
 
 Then restart Codex or start a new Codex session so skills are reloaded.
@@ -27,6 +27,12 @@ or:
 
 ```text
 Use the relay-pickup skill
+```
+
+or configure defaults naturally:
+
+```text
+Use the relay-set skill with full temp
 ```
 
 ## Notes

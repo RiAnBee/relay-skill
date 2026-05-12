@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - 2026-05-12
+
+- Add `/relay-set` and `relay-set` for project-local Relay default settings.
+- Change the built-in storage default from temp files to project-local `.relay/` files.
+- Add `--tmp` and `--temp` one-shot temporary storage overrides.
+- Add `--compact` and `--brief` one-shot compact-detail overrides alongside `--full`.
+- Keep Matt-compatible `handoff-*.md` pickup candidates while continuing to generate only `relay-*.md` files.
+- Fix temp pickup discovery guidance by requiring shallow top-level `find -maxdepth 1` checks instead of recursive temp scans.
+
 ## 0.2.0 - 2026-05-12
 
 - Simplify the cross-agent package around one canonical root `skills/` directory.

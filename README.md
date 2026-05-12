@@ -4,7 +4,7 @@ English | [CN](README.zh-CN.md)
 
 Relay is a lightweight pass/pickup handoff skill for coding agents.
 
-It is based on the spirit and core wording of Matt Pocock's excellent [`handoff`](https://skills.sh/mattpocock/skills/handoff) skill, then extends it with pickup behavior, opt-in persistent storage, semantic filenames, and a detailed mode.
+It is based on the spirit and core wording of Matt Pocock's excellent [`handoff`](https://skills.sh/mattpocock/skills/handoff) skill, then extends it with pickup behavior, configurable storage defaults, semantic filenames, and a detailed mode.
 
 ## Why
 
@@ -25,6 +25,7 @@ Relay uses one canonical skill set plus thin command entrypoints:
 - `skills/relay/SKILL.md`: canonical smart Relay behavior.
 - `skills/relay-pass/SKILL.md`: explicit pass-mode behavior.
 - `skills/relay-pickup/SKILL.md`: explicit pickup-mode behavior.
+- `skills/relay-set/SKILL.md`: project-local Relay default settings.
 - `.claude-plugin/plugin.json`: Claude Code plugin metadata.
 - `commands/`: thin slash-command wrappers for runtimes that support command files.
 - `adapters/codex/`: Codex installation notes only.
@@ -37,7 +38,7 @@ The adapters intentionally do not duplicate skills or commands. Install the same
 This repository is packaged with three discovery surfaces:
 
 - `.claude-plugin/plugin.json`: registers the skill for plugin-aware installers.
-- `commands/`: exposes `/relay`, `/relay-pass`, and `/relay-pickup` command wrappers.
+- `commands/`: exposes `/relay`, `/relay-pass`, `/relay-pickup`, and `/relay-set` command wrappers.
 - `skills/`: contains the Relay behavior skills.
 
 For Claude Code plugin-style installs, install this repository as a plugin so `.claude-plugin/plugin.json` can register the package.
@@ -46,7 +47,7 @@ For manual skill installs, copy the skill directories into your Claude skills di
 
 ```bash
 mkdir -p ~/.claude/skills
-cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.claude/skills/
+cp -R skills/relay skills/relay-pass skills/relay-pickup skills/relay-set ~/.claude/skills/
 ```
 
 For manual slash-command installs, copy command wrappers into your Claude commands directory:
@@ -66,10 +67,10 @@ Install the Codex skills:
 
 ```bash
 mkdir -p ~/.codex/skills
-cp -R skills/relay skills/relay-pass skills/relay-pickup ~/.codex/skills/
+cp -R skills/relay skills/relay-pass skills/relay-pickup skills/relay-set ~/.codex/skills/
 ```
 
-Then restart Codex or start a new Codex session. You can trigger these from Codex's skill UI or by asking naturally, for example `Use the relay-pass skill`.
+Then restart Codex or start a new Codex session. You can trigger these from Codex's skill UI or by asking naturally, for example `Use the relay-pass skill` or `Use the relay-set skill`.
 
 See `adapters/codex/README.md` for details.
 
@@ -86,9 +87,11 @@ mkdir -p ~/.config/opencode/commands ~/.config/opencode/skills
 ln -s /path/to/relay-skill/commands/relay.md ~/.config/opencode/commands/relay.md
 ln -s /path/to/relay-skill/commands/relay-pass.md ~/.config/opencode/commands/relay-pass.md
 ln -s /path/to/relay-skill/commands/relay-pickup.md ~/.config/opencode/commands/relay-pickup.md
+ln -s /path/to/relay-skill/commands/relay-set.md ~/.config/opencode/commands/relay-set.md
 ln -s /path/to/relay-skill/skills/relay ~/.config/opencode/skills/relay
 ln -s /path/to/relay-skill/skills/relay-pass ~/.config/opencode/skills/relay-pass
 ln -s /path/to/relay-skill/skills/relay-pickup ~/.config/opencode/skills/relay-pickup
+ln -s /path/to/relay-skill/skills/relay-set ~/.config/opencode/skills/relay-set
 ```
 
 Some OpenCode versions and UIs differ in whether project-local or GUI custom commands are loaded. Relay's documented OpenCode install path is global config to avoid modifying project-owned `.opencode` directories.
@@ -129,16 +132,28 @@ Pass the baton and tell the next session what to focus on:
 /relay-pass next session should continue experiment 3 and debug reward logging
 ```
 
-Persist the relay document inside the project instead of using a temporary file:
+Force project-local storage for one pass:
 
 ```text
 /relay-pass --keep next session should continue experiment 3
+```
+
+Use a one-shot temporary file, matching Matt-style temp storage:
+
+```text
+/relay-pass --tmp next session should continue experiment 3
 ```
 
 Write a more detailed relay document:
 
 ```text
 /relay-pass --full preserve the important original wording and decisions
+```
+
+Force a compact relay document even if project defaults are full:
+
+```text
+/relay-pass --compact preserve only what the next session needs
 ```
 
 Pick up the newest likely relay document:
@@ -153,17 +168,33 @@ Pick up a specific thread of work and continue immediately:
 /relay-pickup continue experiment 3 and debug reward logging
 ```
 
+Set project defaults with direct words:
+
+```text
+/relay-set full temp
+/relay-set compact project
+/relay-set tmp
+/relay-set full
+```
+
 ## Defaults
 
-- Temporary relay files by default.
-- Persistent `.relay/` files only when requested with `--keep`, `--persist`, or clear natural language.
+- Built-in default storage is project-local `.relay/`.
+- Built-in default detail is compact.
+- Project defaults live in `.relay/config.json` and can be changed with `/relay-set`.
+- Use `--keep` or `--persist` to force `.relay/` for one pass.
+- Use `--tmp` or `--temp` to force `${TMPDIR:-/tmp}` for one pass.
+- Use `--full` to force detailed output for one pass.
+- Use `--compact` or `--brief` to force compact output for one pass.
 - Filename format: `relay-<UTC timestamp>-<semantic slug>-<random suffix>.md`.
+- Pickup searches `.relay/` and the top level of `${TMPDIR:-/tmp}` for `relay-*.md` and Matt-compatible `handoff-*.md` candidates, then picks the newest likely match.
+- Pickup must never recursively scan shared temp roots such as `/tmp` or `$TMPDIR`.
 - Conditional Markdown sections: omit generic filler instead of inventing next steps, blockers, risks, or open questions.
 - Existing artifacts are referenced by path or URL instead of copied.
 
-## Persistent Files And Privacy
+## Relay Files And Privacy
 
-Relay documents can contain sensitive project context, private file paths, internal decisions, and user wording.
+Relay documents can contain sensitive project context, private file paths, internal decisions, and user wording. This applies to files under `.relay/` and temporary files under `${TMPDIR:-/tmp}`.
 
 This repo's `.gitignore` ignores `.relay/` by default so generated relay documents are not accidentally committed. If you intentionally want to version relay documents, remove `.relay/` from `.gitignore` after reviewing the content.
 

@@ -2,7 +2,7 @@
 name: relay-pass
 user-invocable: true
 description: Write a lightweight Relay handoff document so a fresh agent can continue the work. Use when ending, saving, or transferring a session.
-argument-hint: "[focus, hint, or next task] [--keep|--persist] [--full]"
+argument-hint: "[focus, hint, or next task] [--keep|--persist|--tmp|--temp] [--full|--compact|--brief]"
 ---
 
 Run Relay in `pass` mode.
@@ -12,11 +12,13 @@ Use the canonical behavior in `../relay/SKILL.md`, but force the action to `pass
 Treat all user arguments as the pass-mode focus and flags:
 
 - `--keep` or `--persist`: save under `.relay/` in the coding agent's startup directory.
+- `--tmp` or `--temp`: save under the system temp directory, `${TMPDIR:-/tmp}`.
 - `--full`: write a more detailed relay document and preserve important original wording.
+- `--compact` or `--brief`: write the compact relay document.
 - Any other text: describe what the next session should focus on.
 
 Do not summarise the `relay-pass` invocation itself. Summarise the real work that happened before this command.
 
-By default, save it to a temporary file named like `relay-<UTC timestamp>-<semantic slug>-<random suffix>.md`. If the user passes `--keep`, `--persist`, or clearly asks to save in the project, save it under `.relay/` in the coding agent's startup directory.
+Use the storage and detail rules from `../relay/SKILL.md`. Built-in defaults are project-local `.relay/` storage and compact detail. `.relay/config.json` may change those defaults, and invocation flags override settings for this pass only.
 
 After writing the file, tell the user the path and give a short summary of what was captured.

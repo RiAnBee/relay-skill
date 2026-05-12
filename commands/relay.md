@@ -1,6 +1,6 @@
 ---
 description: Pass or pick up a Relay handoff document.
-argument-hint: "pass|pickup [focus, hint, or next task] [--keep|--persist] [--full]"
+argument-hint: "pass|pickup [focus, hint, or next task] [--keep|--persist|--tmp|--temp] [--full|--compact|--brief]"
 ---
 
 Use the installed `relay` skill to handle this request.
