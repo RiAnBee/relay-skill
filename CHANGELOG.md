@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 - 2026-05-12
+
+- Rewrite English and Chinese READMEs around the relay-session workflow before installation details.
+- Expand the motivation section with the harness, auto-injected project context, compacting, and fresh-session handoff story.
+- Clarify recommended installation as clone-once plus symlink, with copy install as fallback.
+
 ## 0.3.0 - 2026-05-12
 
 - Add `/relay-set` and `relay-set` for project-local Relay default settings.
