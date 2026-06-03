@@ -1,7 +1,7 @@
 {
   "name": "relay-skill",
-  "description": "A lightweight pass/pickup handoff skill for coding agents.",
-  "version": "0.3.1",
+  "description": "A lightweight but high-signal pass/pickup handoff skill for coding agents.",
+  "version": "0.4.0",
   "author": {
     "name": "lidonglin"
   },

@@ -1,5 +1,5 @@
 ---
-description: Pick up from a Relay handoff document and continue work.
+description: Pick up from the best Relay handoff document and continue work.
 argument-hint: "[file path, focus, hint, or next task]"
 ---
 

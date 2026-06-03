@@ -1,3 +1,4 @@
+# Generated Relay handoffs and local Relay settings
 .relay/
 *.tmp
 .DS_Store

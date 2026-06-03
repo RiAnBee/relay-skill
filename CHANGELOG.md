@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 - 2026-06-03
+
+- Strengthen the canonical Relay handoff schema around YAML frontmatter plus `Goal`, `Hard Constraints`, `Current State`, `Failed Approaches`, and stronger resume cues.
+- Add `schema_version: 1` to the documented relay format so future pickup behavior can distinguish strengthened relays from legacy files.
+- Clarify that `--full` is the maximum-fidelity mode and should optimize for baton-passing quality rather than token savings.
+- Strengthen pickup guidance so Relay prefers explicit or clearly dominant candidates, announces the selected relay file, and avoids silent ambiguous auto-pickups.
+- Replace GNU-specific `find -printf` discovery examples with portable shallow `find -print` examples.
+- Expand README, Chinese README, SECURITY, and adapter docs around stronger defaults and safer pickup behavior.
+- Add copy-pasteable compact and full relay templates plus lightweight fixture-based contract checks under `tests/`.
+
 ## 0.3.1 - 2026-05-12
 
 - Rewrite English and Chinese READMEs around the relay-session workflow before installation details.

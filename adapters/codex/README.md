@@ -35,6 +35,13 @@ or configure defaults naturally:
 Use the relay-set skill with full temp
 ```
 
+Behavior notes:
+
+- Relay now prefers project-local `.relay/` storage by default.
+- The default relay document is compact but structured for reliable pickup.
+- `--full` should be treated as a maximum-fidelity baton pass, not a token-saving mode.
+- In a fresh ambiguous session, smart Relay should prefer a short clarification over silently loading an old handoff.
+
 ## Notes
 
 - Keep root `skills/relay*/SKILL.md` as the canonical Relay behavior.

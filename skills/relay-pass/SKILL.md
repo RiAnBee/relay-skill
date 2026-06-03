@@ -1,7 +1,7 @@
 ---
 name: relay-pass
 user-invocable: true
-description: Write a lightweight Relay handoff document so a fresh agent can continue the work. Use when ending, saving, or transferring a session.
+description: Write a high-signal Relay handoff document so a fresh agent can continue the work. Use when ending, saving, or transferring a session.
 argument-hint: "[focus, hint, or next task] [--keep|--persist|--tmp|--temp] [--full|--compact|--brief]"
 ---
 
@@ -13,7 +13,7 @@ Treat all user arguments as the pass-mode focus and flags:
 
 - `--keep` or `--persist`: save under `.relay/` in the coding agent's startup directory.
 - `--tmp` or `--temp`: save under the system temp directory, `${TMPDIR:-/tmp}`.
-- `--full`: write a more detailed relay document and preserve important original wording.
+- `--full`: write the maximum-fidelity relay document and preserve important original wording, rationale, and failed paths.
 - `--compact` or `--brief`: write the compact relay document.
 - Any other text: describe what the next session should focus on.
 

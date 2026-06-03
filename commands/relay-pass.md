@@ -1,5 +1,5 @@
 ---
-description: Write a Relay handoff document for the next session.
+description: Write a high-signal Relay handoff document for the next session.
 argument-hint: "[focus, hint, or next task] [--keep|--persist|--tmp|--temp] [--full|--compact|--brief]"
 ---
 

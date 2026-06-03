@@ -1,5 +1,5 @@
 ---
-description: Pass or pick up a Relay handoff document.
+description: Pass or pick up a high-signal Relay handoff document.
 argument-hint: "pass|pickup [focus, hint, or next task] [--keep|--persist|--tmp|--temp] [--full|--compact|--brief]"
 ---
 

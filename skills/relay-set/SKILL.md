@@ -28,6 +28,13 @@ Accepted detail words:
 - `compact`, `brief`, `short`, `concise`: set `detail` to `compact`.
 - `full`, `detailed`, `detail`: set `detail` to `full`.
 
+Common defaults to recommend:
+
+- `/relay-set compact project`: the default high-signal everyday setting.
+- `/relay-set full project`: the best default when the team prefers maximum relay fidelity.
+- `/relay-set compact temp`: closest to Matt-style disposable handoffs.
+- `/relay-set full temp`: detailed but intentionally one-shot.
+
 Examples:
 
 ```text
@@ -42,6 +49,13 @@ If the user provides both storage and detail words in any order, set both. If th
 If the user provides no arguments, or asks to show settings, read `.relay/config.json` if present and report the effective settings. If the file is missing, report the built-in defaults.
 
 If the user asks to reset settings, write the built-in defaults to `.relay/config.json`.
+
+When explaining settings to the user:
+
+- `project + compact` means structured everyday Relay with project-local storage.
+- `project + full` means maximum-fidelity Relay kept under `.relay/`.
+- `temp + compact` means disposable lightweight handoffs.
+- `temp + full` means disposable but very detailed handoffs.
 
 When writing settings:
 

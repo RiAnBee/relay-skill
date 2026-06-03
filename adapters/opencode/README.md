@@ -63,6 +63,13 @@ or explicit modes:
 /relay-set
 ```
 
+Behavior notes:
+
+- Relay prefers project-local `.relay/` storage by default.
+- The default handoff should stay compact but preserve goal, hard constraints, current state, and failed approaches.
+- `--full` is the maximum-fidelity mode.
+- Smart `/relay` remains available, but in a fresh ambiguous session Relay should prefer a short clarification over silently loading an old handoff.
+
 ## Notes
 
 - `skills/relay/SKILL.md` remains the canonical smart Relay behavior.
