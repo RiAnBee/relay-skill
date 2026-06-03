@@ -9,6 +9,7 @@
 - Replace GNU-specific `find -printf` discovery examples with portable shallow `find -print` examples.
 - Expand README, Chinese README, SECURITY, and adapter docs around stronger defaults and safer pickup behavior.
 - Add copy-pasteable compact and full relay templates plus lightweight fixture-based contract checks under `tests/`.
+- Further strengthen `relay-pass --full` guidance around verbatim doctrine, single-action next steps, and higher-value failed approaches.
 
 ## 0.3.1 - 2026-05-12
 

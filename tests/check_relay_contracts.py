@@ -46,6 +46,7 @@ def validate_skill_contract() -> None:
         "## Hard Constraints",
         "## Failed Approaches",
         "## Settled Decisions",
+        "## Verbatim Doctrine",
         "## Resume Prompt",
         "do not silently auto-pick a relay file",
         "find \"${TMPDIR:-/tmp}\" -maxdepth 1 -type f",
@@ -73,6 +74,7 @@ def validate_readmes() -> None:
                 "### 3. Compact Template You Can Copy",
                 "### 4. Full Template You Can Copy",
                 "schema_version: 1",
+                "Verbatim Doctrine",
                 "python tests/check_relay_contracts.py",
             ],
         ),
@@ -82,6 +84,7 @@ def validate_readmes() -> None:
                 "### 3. 可直接复制的 compact 模板",
                 "### 4. 可直接复制的 full 模板",
                 "schema_version: 1",
+                "Verbatim Doctrine",
                 "python tests/check_relay_contracts.py",
             ],
         ),
@@ -129,6 +132,7 @@ def validate_full_fixture() -> None:
         "Current State",
         "Failed Approaches",
         "Settled Decisions",
+        "Verbatim Doctrine",
         "Explicit Next Step",
         "Known Blockers",
         "Open Questions",
@@ -139,6 +143,10 @@ def validate_full_fixture() -> None:
         "Resume Prompt",
     ]:
         require(heading in headings(text), f"full fixture missing heading: {heading}")
+    require(
+        "The single best first step" in read("README.md"),
+        "README.md should describe Explicit Next Step as one best first move",
+    )
 
 
 def validate_legacy_fixture() -> None:

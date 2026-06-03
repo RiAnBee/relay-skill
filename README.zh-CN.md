@@ -260,14 +260,20 @@ commit: <commit-if-known>
 - <Approach that failed>
   Why it failed: <brief reason>
 
+这里应优先记录真正有价值的产品、设计、实现或调查死路，而不是价值很低的流程小故障。只有当流程问题会影响下一棒时，才值得写进去。
+
 ## Settled Decisions
 
 - <Decision already made>
   Why it was made: <brief rationale>
 
+## Verbatim Doctrine
+
+- "<下一棒应尽量原样继承的重要用户原话>"
+
 ## Explicit Next Step
 
-<The best first step for the next session>
+<下一棒最该先做的唯一动作；如果任务已完成，就直接写明无需继续>
 
 ## Known Blockers
 
@@ -349,12 +355,15 @@ Relay 理想上应该：
 - `Current State`
 - `Failed Approaches`
 - `Settled Decisions`
+- `Verbatim Doctrine`
 - `Files Changed`
 - `Files Consulted`
 - `References`
 - `Resume Prompt`
 
 即使在 `--full` 下，Relay 仍然不应该无脑复制大段 artifact。除非“原文”本身就是必须保留的东西，否则优先按 path 或 URL 引用。
+
+`--full` 真正应该增强的，不只是“更多行数”，而是：保留更多用户 doctrine 原话、把下一步收敛成单一起步动作、并记录最有价值的不可重试死路。
 
 即使项目默认是详细版，也可以单次强制写精简版：
 

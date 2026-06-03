@@ -260,14 +260,20 @@ commit: <commit-if-known>
 - <Approach that failed>
   Why it failed: <brief reason>
 
+Prefer real product, design, implementation, or investigation dead ends here. Do not fill this section with low-value process hiccups unless they materially affect the next session.
+
 ## Settled Decisions
 
 - <Decision already made>
   Why it was made: <brief rationale>
 
+## Verbatim Doctrine
+
+- "<Important original user wording that the next session should inherit almost exactly>"
+
 ## Explicit Next Step
 
-<The best first step for the next session>
+<The single best first step for the next session, or say that the task is complete and no next step is required>
 
 ## Known Blockers
 
@@ -349,12 +355,15 @@ In `--full`, Relay should optimize for baton-passing quality, not token savings.
 - `Current State`
 - `Failed Approaches`
 - `Settled Decisions`
+- `Verbatim Doctrine`
 - `Files Changed`
 - `Files Consulted`
 - `References`
 - `Resume Prompt`
 
 Even in `--full`, Relay should still avoid copying large artifacts blindly. Reference files, plans, issues, or diffs by path or URL unless the exact text itself is the thing that must be preserved.
+
+The biggest difference in `--full` should not just be more lines. It should preserve more of the user's doctrine in their own words, make the next first action unambiguous, and record the most valuable dead ends that must not be repeated.
 
 Force a compact handoff even if your project default is full:
 

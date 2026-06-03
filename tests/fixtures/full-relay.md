@@ -35,9 +35,14 @@ Investigation narrowed the bug to the wrapper path before the final write call. 
 - Keep the fix local to reward logging.
   Why it was made: the user wanted strengthening, not a broad refactor.
 
+## Verbatim Doctrine
+
+- "Strengthen the current Relay design rather than turning it into a different system."
+- "Treat `--full` as the no-token-budget, maximum-fidelity relay mode."
+
 ## Explicit Next Step
 
-Inspect the wrapper call site, patch the missing reward field, rerun the targeted regression test, then decide whether a wider smoke test is needed.
+Patch the wrapper call site for the missing reward field, then rerun the targeted regression test.
 
 ## Known Blockers
 

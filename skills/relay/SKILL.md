@@ -91,6 +91,8 @@ Choose the detail level in this order:
 
 If the user passes `--full`, or clearly asks for a very detailed handoff in natural language, spend tokens freely. Preserve important original wording verbatim when it affects requirements, constraints, decisions, doctrine, or acceptance criteria. Capture decision rationale, failed routes, useful files consulted, test or validation status, and workspace state when known. `--full` should optimize for maximum relay fidelity, not token efficiency.
 
+In `--full`, prefer preserving a clearly marked doctrine block when the user expressed important principles in their own words. When the user said something that the next session must inherit exactly or nearly exactly, preserve it in a dedicated verbatim section rather than only paraphrasing it.
+
 Natural-language detailed-mode requests include phrases like "full", "very detailed", "don't save tokens", "preserve the wording", "include the important original text", "超详细", "详细保存", "别省 token", "保留原文", or "重要内容都写进去".
 
 Natural-language compact-mode requests include phrases like "compact", "brief", "short", "concise", "精简", "简短", or "省 token".
@@ -140,6 +142,8 @@ Add these sections when they are actually needed, in this order:
 - <What was tried, why it failed, and what the next session should avoid repeating.>
 ```
 
+Prefer product, design, implementation, or investigation dead ends over low-value process hiccups. Only include process-level failures when they materially affect the next session.
+
 ```markdown
 ## Settled Decisions
 
@@ -147,10 +151,20 @@ Add these sections when they are actually needed, in this order:
 ```
 
 ```markdown
+## Verbatim Doctrine
+
+- "<Important original user wording or near-exact wording that the next session should inherit.>"
+```
+
+Add `Verbatim Doctrine` in `--full` when the user's own wording carries important intent, constraints, tone, or doctrine. If there is no such wording, omit the section.
+
+```markdown
 ## Explicit Next Step
 
 <What the next agent should do first, if clear.>
 ```
+
+`Explicit Next Step` should describe one best first move, not a menu of equal options. If the work is already complete and there is no required continuation, say that directly instead of inventing follow-up work.
 
 ```markdown
 ## Known Blockers
@@ -190,7 +204,7 @@ Add these sections when they are actually needed, in this order:
 
 Prefer omission over generic filler. Do not invent next actions, blockers, open questions, risks, or decisions just to fill a template.
 
-In `--full` mode, be much more complete in `Hard Constraints`, `Current State`, `Failed Approaches`, `Settled Decisions`, `Files Changed`, `Files Consulted`, `References`, `Suggested Skills`, and `Resume Prompt`. Preserve more exact wording and rationale when it materially improves the baton pass. Still do not dump full artifacts, full diffs, or large copied text unless the user explicitly wants raw text preserved.
+In `--full` mode, be much more complete in `Hard Constraints`, `Current State`, `Failed Approaches`, `Settled Decisions`, `Verbatim Doctrine`, `Files Changed`, `Files Consulted`, `References`, `Suggested Skills`, and `Resume Prompt`. Preserve more exact wording and rationale when it materially improves the baton pass. Still do not dump full artifacts, full diffs, or large copied text unless the user explicitly wants raw text preserved.
 
 After writing the file, tell the user the path and give a short summary of what was captured.
 
