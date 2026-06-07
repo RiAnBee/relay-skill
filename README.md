@@ -1,5 +1,9 @@
 # Relay Skill
 
+<p align="center">
+  <img src="./v2.0.png" alt="relay-skill banner" width="100%" />
+</p>
+
 English | [CN](README.zh-CN.md)
 
 Relay is a lightweight pass/pickup handoff skill for coding agents.

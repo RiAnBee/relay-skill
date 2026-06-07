@@ -1,5 +1,9 @@
 # Relay Skill
 
+<p align="center">
+  <img src="./v2.0.png" alt="relay-skill banner" width="100%" />
+</p>
+
 [EN](README.md) | 中文
 
 Relay 是一个面向 coding agent 的轻量级 pass/pickup 接力 skill。
