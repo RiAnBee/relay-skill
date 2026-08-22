@@ -635,7 +635,7 @@ artifact_sha256: "sha256:a8c14f719d2e..."
             <tr><td><a href="skills/relay/references/pickup-protocol.md"><code>references/pickup-protocol.md</code></a></td><td>候选选择、验证、现实对齐、Aligned/Drifted/Orphaned/Invalid 分类</td><td><span class="status done">已更新</span></td></tr>
             <tr><td><a href="skills/relay/references/relay-v2.schema.json"><code>relay-v2.schema.json</code></a></td><td>schema v2 的机器可读 metadata 数据模型；helper 还会做 schema 之外的严格检查</td><td><span class="status done">已新增</span></td></tr>
             <tr><td><a href="skills/relay/scripts/relay_artifact.py"><code>scripts/relay_artifact.py</code></a></td><td>快照、配置、创建、读取、验证、hash、原子发布和安全边界的实现</td><td><span class="status partial">已实现，仍有待修项</span></td></tr>
-            <tr><td><a href="tests/test_relay_artifact.py"><code>tests/test_relay_artifact.py</code></a></td><td>artifact helper 的行为、安全边界、兼容性和并发/异常回归测试</td><td><span class="status done">62 项通过</span></td></tr>
+            <tr><td><a href="tests/test_relay_artifact.py"><code>tests/test_relay_artifact.py</code></a></td><td>artifact helper 的行为、安全边界、兼容性和并发/异常回归测试</td><td><span class="status done">67 项通过</span></td></tr>
             <tr><td><a href="tests/check_relay_contracts.py"><code>tests/check_relay_contracts.py</code></a></td><td>文档、schema、命令入口和 fixture 之间的契约检查</td><td><span class="status done">通过</span></td></tr>
           </tbody>
         </table>
@@ -721,7 +721,7 @@ python skills/relay/scripts/relay_artifact.py validate \
           <table class="compare" style="box-shadow:none;">
             <thead><tr><th>证据</th><th>能支持的结论</th><th>不能推出的结论</th></tr></thead>
             <tbody>
-              <tr><td>62 个单元测试 + contract checks</td><td>列出的输入和故障场景，在当前环境下得到预期行为。</td><td>所有操作系统、文件系统、并发极端条件和生产部署都安全。</td></tr>
+              <tr><td>67 个单元测试 + contract checks</td><td>列出的输入和故障场景，在当前环境下得到预期行为。</td><td>所有操作系统、文件系统、并发极端条件和生产部署都安全。</td></tr>
               <tr><td>fresh-agent compact/full forward test</td><td>新 agent 能按协议读取示例 handoff，识别历史/现场冲突并保留硬约束。</td><td>所有模型、任务类型、上下文长度都同样有效。</td></tr>
               <tr><td>社区项目与论文调研</td><td>提供设计原则和风险线索，解释为什么要分层、验 fresh state、记录 unknown。</td><td>证明 Relay 在真实业务中已经提高完成率或降低成本。</td></tr>
             </tbody>
