@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RiAnBee/relay-skill/blob/v0.5.0/skills/relay/references/relay-v2.schema.json",
+  "title": "Relay Skill handoff metadata schema (wire schema v2)",
+  "description": "Machine-readable metadata contract for a finalized Relay Skill handoff artifact using wire schema v2.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "relay_id",
+    "created",
+    "mode",
+    "disposition",
+    "storage",
+    "project_root",
+    "working_directory",
+    "focus",
+    "slug",
+    "artifact_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 2
+    },
+    "relay_id": {
+      "type": "string",
+      "pattern": "^rly_[0-9a-f]{32}$"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "mode": {
+      "enum": [
+        "compact",
+        "full"
+      ]
+    },
+    "disposition": {
+      "enum": [
+        "continue",
+        "review",
+        "delegate",
+        "blocked",
+        "complete",
+        "reference"
+      ]
+    },
+    "storage": {
+      "enum": [
+        "project",
+        "temp"
+      ]
+    },
+    "project_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "working_directory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "focus": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+){1,5}$",
+      "maxLength": 48,
+      "not": {
+        "pattern": "(?:^|-)(?:relay|handoff|pass|pickup)(?:-|$)"
+      }
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40,64}$"
+    },
+    "workspace_dirty": {
+      "type": "boolean"
+    },
+    "parent_relay_id": {
+      "type": "string",
+      "pattern": "^rly_[0-9a-f]{32}$"
+    },
+    "source_session": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_context_state": {
+      "enum": [
+        "full",
+        "compacted",
+        "partial",
+        "unavailable",
+        "unknown"
+      ]
+    },
+    "created_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "propertyNames": {
+    "pattern": "^[a-z][a-z0-9_]*$"
+  },
+  "patternProperties": {
+    "^x_[a-z0-9_]+$": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    }
+  },
+  "additionalProperties": false
+}

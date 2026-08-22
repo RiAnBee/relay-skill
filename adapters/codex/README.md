@@ -39,8 +39,14 @@ Behavior notes:
 
 - Relay now prefers project-local `.relay/` storage by default.
 - The default relay document is compact but structured for reliable pickup.
-- `--full` should be treated as a maximum-fidelity baton pass, not a token-saving mode.
+- New passes use the bundled Python helper for schema-v2 artifact IDs, filename digests, atomic
+  private writes, Git snapshots, and pickup validation. Install the whole
+  `skills/relay/` directory, not only `SKILL.md`.
+- `--full` runs evidence sweep, structured write, and reverse coverage audit;
+  it is not merely a longer summary.
 - In a fresh ambiguous session, smart Relay should prefer a short clarification over silently loading an old handoff.
+- Within one coherent Codex chat, use native resume/compact/fork when that
+  preserves the desired history; use Relay for portable or inspectable transfer.
 
 ## Notes
 

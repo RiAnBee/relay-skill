@@ -1,11 +1,11 @@
 ---
 name: relay-set
-user-invocable: true
 description: Configure project-local Relay defaults for storage and detail. Use when the user wants Relay to default to .relay or temp, compact or full documents.
-argument-hint: "[project|keep|persist|tmp|temp] [compact|brief|full] [show|reset]"
 ---
 
-Configure Relay defaults for the current project. Settings are stored in `.relay/config.json` in the coding agent's startup directory.
+Configure Relay defaults for the stable project root. Resolve it once using an
+explicit root, otherwise the enclosing Git root, otherwise the invocation cwd.
+Store settings in `<project-root>/.relay/config.json`.
 
 This skill only changes Relay defaults. It does not change the core pass/pickup handoff behavior in `../relay/SKILL.md`.
 
@@ -44,11 +44,23 @@ Examples:
 /relay-set full
 ```
 
-If the user provides both storage and detail words in any order, set both. If the user provides only one, update only that setting and preserve the other current setting.
+If the user provides both storage and detail words in any order, set both. If
+the user provides only one, update only that setting and preserve the other
+current setting through the canonical helper.
 
-If the user provides no arguments, or asks to show settings, read `.relay/config.json` if present and report the effective settings. If the file is missing, report the built-in defaults.
+If the user provides no arguments, or asks to show settings, run the canonical
+helper:
 
-If the user asks to reset settings, write the built-in defaults to `.relay/config.json`.
+```text
+python <relay-skill-dir>/scripts/relay_artifact.py config-get \
+  --project-root <stable-project-root>
+```
+
+It safely reads a bounded regular config without following a final symlink and returns
+the built-in defaults when the file is absent. For malformed or unsafe config,
+report the error rather than following or repairing the path.
+
+If the user asks to reset settings, pass both built-in defaults to the helper.
 
 When explaining settings to the user:
 
@@ -57,11 +69,20 @@ When explaining settings to the user:
 - `temp + compact` means disposable lightweight handoffs.
 - `temp + full` means disposable but very detailed handoffs.
 
-When writing settings:
+When writing settings, locate the canonical helper relative to `../relay/SKILL.md`
+and run:
 
-1. Create `.relay/` if needed.
-2. Preserve valid existing settings that were not overridden.
-3. Write `.relay/config.json` as compact JSON with exactly these keys:
+```text
+python <relay-skill-dir>/scripts/relay_artifact.py config-set \
+  --project-root <stable-project-root> \
+  [--storage project|temp] \
+  [--detail compact|full]
+```
+
+Do not write `.relay/config.json` directly. The helper preserves an unspecified
+valid setting, emits compact JSON with exactly these keys, rejects symlinked or
+unsafe config paths, and publishes the update with a private file-fsynced atomic
+replace:
 
 ```json
 {"storage":"project","detail":"compact"}
@@ -72,4 +93,5 @@ Use only these values:
 - `storage`: `project` or `temp`
 - `detail`: `compact` or `full`
 
-After writing settings, tell the user the effective defaults and the config path.
+After writing settings, tell the user the effective defaults, config path, and
+any directory-fsync or platform ACL warning returned by the helper.

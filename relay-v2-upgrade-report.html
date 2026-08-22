@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Relay Skill handoff wire schema v2 协议升级说明：设计动机、实现细节、验证结果与剩余边界。">
+  <title>Relay Skill 升级说明 | Handoff Schema v2</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5f6b76;
+      --soft: #edf2f4;
+      --line: #d7e0e4;
+      --paper: #ffffff;
+      --canvas: #f5f7f8;
+      --navy: #17324d;
+      --teal: #087f8c;
+      --teal-soft: #dff3f3;
+      --blue-soft: #e6eef8;
+      --amber: #a65b00;
+      --amber-soft: #fff1dc;
+      --red: #a03a3a;
+      --red-soft: #fce8e6;
+      --green: #24704d;
+      --green-soft: #e5f5ea;
+      --purple: #67468b;
+      --purple-soft: #eee8f7;
+      --shadow: 0 12px 34px rgba(23, 50, 77, .08);
+      --radius: 12px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.72;
+      letter-spacing: 0;
+    }
+    a { color: var(--teal); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: var(--navy); }
+    code, pre, .mono {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      padding: .12em .35em;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #f1f5f6;
+      font-size: .9em;
+      overflow-wrap: anywhere;
+    }
+    pre {
+      margin: 16px 0;
+      padding: 16px 18px;
+      border: 1px solid #c9d5da;
+      border-radius: 9px;
+      background: #142433;
+      color: #f4f8fa;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: .86rem;
+      line-height: 1.6;
+    }
+    .wrap { width: min(var(--max), calc(100% - 36px)); margin: 0 auto; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { left: 16px; top: 16px; z-index: 20; padding: 8px 12px; background: var(--paper); border: 2px solid var(--teal); border-radius: 6px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(215, 224, 228, .9);
+      background: rgba(245, 247, 248, .96);
+      backdrop-filter: blur(10px);
+    }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 58px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--navy); font-weight: 760; text-decoration: none; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #fff;
+      font-size: .82rem;
+      letter-spacing: 0;
+    }
+    .topbar nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 14px; }
+    .topbar nav a { color: var(--muted); font-size: .84rem; text-decoration: none; }
+    .topbar nav a:hover { color: var(--teal); }
+
+    .hero { padding: 78px 0 42px; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 12px; color: var(--teal); font-size: .8rem; font-weight: 800; letter-spacing: .12em; }
+    h1, h2, h3 { color: var(--navy); line-height: 1.24; letter-spacing: 0; }
+    h1 { max-width: 830px; margin: 0; font-size: clamp(2.15rem, 5vw, 4.25rem); font-weight: 820; }
+    .hero-lede { max-width: 850px; margin: 22px 0 0; color: #3d4c58; font-size: clamp(1.08rem, 2vw, 1.34rem); }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 28px; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: #fafcfc; color: var(--muted); font-size: .82rem; }
+    .pill strong { color: var(--ink); }
+    .pill.good { border-color: #b8ddc5; background: var(--green-soft); color: var(--green); }
+    .pill.warn { border-color: #f0d09d; background: var(--amber-soft); color: var(--amber); }
+
+    .section { padding: 70px 0; }
+    .section.alt { background: #eef3f5; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .section-head { max-width: 780px; margin-bottom: 28px; }
+    .section-kicker { margin: 0 0 7px; color: var(--teal); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.75rem, 3vw, 2.65rem); }
+    h3 { margin: 0 0 8px; font-size: 1.15rem; }
+    p { margin: 0 0 13px; }
+    .lead { color: var(--muted); font-size: 1.04rem; }
+    .small { color: var(--muted); font-size: .88rem; }
+
+    .toc { margin: -8px 0 24px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+    .toc-title { margin-bottom: 12px; color: var(--navy); font-weight: 800; }
+    .toc-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 22px; }
+    .toc-group { padding-left: 12px; border-left: 3px solid var(--teal); }
+    .toc-group-title { margin-bottom: 4px; color: var(--muted); font-size: .76rem; font-weight: 800; letter-spacing: .08em; }
+    .toc-links { display: flex; flex-wrap: wrap; gap: 4px 13px; }
+    .toc-links a { font-size: .88rem; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+    .card.flat { box-shadow: none; }
+    .card h3 { display: flex; align-items: center; gap: 9px; }
+    .num { display: inline-grid; place-items: center; flex: 0 0 auto; width: 27px; height: 27px; border-radius: 50%; background: var(--teal); color: #fff; font-size: .8rem; font-weight: 800; }
+    .status { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: .75rem; font-weight: 800; line-height: 1.4; vertical-align: 2px; }
+    .status.done { background: var(--green-soft); color: var(--green); }
+    .status.partial { background: var(--amber-soft); color: var(--amber); }
+    .status.open { background: var(--red-soft); color: var(--red); }
+    .status.info { background: var(--blue-soft); color: #2e5c87; }
+
+    .callout { margin: 22px 0; padding: 18px 20px; border-left: 5px solid var(--teal); border-radius: 0 9px 9px 0; background: var(--teal-soft); }
+    .callout.warn { border-left-color: var(--amber); background: var(--amber-soft); }
+    .callout.danger { border-left-color: var(--red); background: var(--red-soft); }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout strong { color: var(--navy); }
+
+    .compare { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; box-shadow: var(--shadow); }
+    .compare th, .compare td { padding: 13px 15px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .compare th { color: var(--navy); background: #eaf0f2; font-size: .88rem; }
+    .compare tr:last-child td { border-bottom: 0; }
+    .compare td:first-child { width: 22%; color: var(--navy); font-weight: 750; }
+
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 26px 0; }
+    .flow-step { position: relative; min-height: 170px; padding: 22px 24px 20px 22px; border: 1px solid var(--line); background: var(--paper); }
+    .flow-step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .flow-step:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+    .flow-step:not(:last-child)::after { content: "→"; position: absolute; right: -15px; top: 50%; z-index: 2; display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--teal); font-size: 1.2rem; transform: translateY(-50%); }
+    .flow-index { color: var(--teal); font: 800 .8rem/1 "SFMono-Regular", Consolas, monospace; }
+    .flow-step h3 { margin-top: 12px; }
+
+    .diagram { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+    .diagram-row { display: grid; grid-template-columns: 1fr 48px 1fr 48px 1fr; align-items: center; gap: 10px; }
+    .diagram-node { min-height: 100px; display: grid; align-content: center; padding: 15px; border: 1px solid #bfd3d8; border-radius: 9px; background: #f8fbfb; text-align: center; }
+    .diagram-node strong { display: block; color: var(--navy); }
+    .diagram-arrow { color: var(--teal); text-align: center; font-size: 1.5rem; }
+    .caption { margin-top: 12px; color: var(--muted); font-size: .85rem; text-align: center; }
+
+    .timeline { position: relative; margin: 26px 0 0 10px; padding-left: 28px; border-left: 2px solid #b8cbd0; }
+    .timeline-item { position: relative; margin: 0 0 26px; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-item::before { content: ""; position: absolute; left: -38px; top: 5px; width: 16px; height: 16px; border: 4px solid var(--canvas); border-radius: 50%; background: var(--teal); }
+    .timeline-item h3 { margin-bottom: 4px; }
+    .timeline-label { color: var(--teal); font: 800 .78rem/1.3 "SFMono-Regular", Consolas, monospace; }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .tag { padding: 4px 8px; border: 1px solid #cbd9dd; border-radius: 5px; background: #f8fbfb; color: #425560; font-size: .8rem; }
+    .quote { margin: 18px 0 0; padding: 16px 18px; border-left: 3px solid var(--purple); background: var(--purple-soft); color: #4c3c5d; }
+
+    .risk-table td:first-child { width: 8%; }
+    .risk-table td:nth-child(2) { width: 23%; }
+    .risk-table td:nth-child(3) { width: 24%; }
+    .risk-table td:nth-child(4) { width: 22%; }
+    .risk-table td:nth-child(5) { width: 23%; }
+    .risk-high { color: var(--red); font-weight: 800; }
+    .risk-mid { color: var(--amber); font-weight: 800; }
+    .risk-low { color: #6d641e; font-weight: 800; }
+
+    details { border: 1px solid var(--line); border-radius: 9px; background: var(--paper); }
+    details + details { margin-top: 10px; }
+    summary { cursor: pointer; padding: 14px 16px; color: var(--navy); font-weight: 750; }
+    details .details-body { padding: 0 16px 16px; }
+    summary::marker { color: var(--teal); }
+
+    .footer { padding: 42px 0 68px; color: var(--muted); font-size: .9rem; }
+    .footer-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+
+    @media (max-width: 820px) {
+      .topbar-inner { align-items: flex-start; padding: 10px 0; }
+      .topbar nav { justify-content: flex-start; }
+      .hero { padding-top: 56px; }
+      .grid-2, .grid-3, .flow { grid-template-columns: 1fr; }
+      .flow-step, .flow-step:first-child, .flow-step:last-child { border-radius: 0; }
+      .flow-step:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+      .flow-step:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+      .flow-step:not(:last-child)::after { right: auto; left: 50%; top: auto; bottom: -15px; transform: translateX(-50%) rotate(90deg); }
+      .diagram-row { grid-template-columns: 1fr; gap: 6px; }
+      .diagram-arrow { transform: rotate(90deg); }
+      .compare { display: block; overflow-x: auto; white-space: normal; }
+      .compare th, .compare td { min-width: 180px; }
+      .risk-table th, .risk-table td { min-width: 220px; }
+      .toc-groups { grid-template-columns: 1fr; gap: 10px; }
+      .wrap { width: min(var(--max), calc(100% - 24px)); }
+    }
+    @media print {
+      .topbar { position: static; }
+      .topbar nav, .toc { display: none; }
+      .hero, .section, .footer { padding-top: 28px; padding-bottom: 28px; }
+      .card, .diagram, .compare { box-shadow: none; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">跳到正文</a>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top" aria-label="回到报告开头"><span class="brand-mark">R</span><span>Relay Skill</span></a>
+      <nav aria-label="章节导航">
+        <a href="#answer">先看结论</a>
+        <a href="#changes">具体改动</a>
+        <a href="#full">full 模式</a>
+        <a href="#pickup">pickup</a>
+        <a href="#research">调研</a>
+        <a href="#limits">边界</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero">
+      <div class="wrap">
+        <p class="eyebrow">RELAY HANDOFF · UPGRADE REPORT</p>
+        <h1>把“交接一下”变成<br>可验证、可恢复的接力协议</h1>
+        <p class="hero-lede">这份报告用直白的语言解释 Relay Skill 本次 handoff artifact wire schema v2 协议升级：为什么旧 handoff 容易丢信息，这一轮到底改了哪些文件和规则，接棒时如何判断“拿到的是不是正确版本”，以及为什么我们仍然不能宣称字面意义上的 100% 恢复。</p>
+        <p class="small" style="margin-top: 17px;">报告范围：Relay Skill <strong>0.5.0</strong> · 检查日期：<strong>2026-08-22</strong> · 依据：仓库实现、协议文档、contract checks、67 个 helper 测试和 forward-test 结果。</p>
+        <div class="hero-meta">
+          <span class="pill good"><strong>已完成</strong> schema v2、确定性 artifact、full 三阶段协议</span>
+          <span class="pill good"><strong>已验证</strong> 67 个单元测试 + 合同检查</span>
+          <span class="pill warn"><strong>仍开放</strong> 1 个高阶竞态仍需加强</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="toc">
+          <div class="toc-title">阅读路线 · 先理解，再看证据，最后看边界</div>
+          <div class="toc-groups">
+            <div class="toc-group"><div class="toc-group-title">理解升级</div><div class="toc-links"><a href="#answer">1. 一分钟结论</a><a href="#problem">2. 旧版的问题</a><a href="#changes">3. 具体改动</a><a href="#identity">4. ID 与 hash</a></div></div>
+            <div class="toc-group"><div class="toc-group-title">接力流程</div><div class="toc-links"><a href="#full">5. --full</a><a href="#pickup">6. pickup</a><a href="#adapt">7. 场景适配</a></div></div>
+            <div class="toc-group"><div class="toc-group-title">证据与边界</div><div class="toc-links"><a href="#research">8. 调研</a><a href="#implementation">9. 代码落点</a><a href="#verification">10. 验证</a><a href="#limits">11. 未解决问题</a><a href="#decision">12. 使用选择</a></div></div>
+          </div>
+        </div>
+
+        <div id="answer" class="section-head">
+          <p class="section-kicker">01 · 先看结论</p>
+          <h2>一句话版本</h2>
+          <p class="lead">这次升级把 Relay 从“模型写一份 Markdown 备忘录”，推进成“模型写语义内容，helper 负责身份、完整性和安全落盘，接收方负责和当前现实重新对齐”的三层协议。</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card">
+            <h3><span class="num">1</span>交接内容更通用</h3>
+            <p>所有任务先保留一个小核心：目标、硬约束、当前状态、唯一下一步、引用。研究、写作、数据、部署、多 agent 等任务，只在需要时加场景模块。</p>
+            <span class="status done">已落地</span>
+          </article>
+          <article class="card">
+            <h3><span class="num">2</span>文件身份不再靠模型记</h3>
+            <p>模型不再手写时间、ID、Git 状态或 hash。标准库 helper 自动生成 <code>relay_id</code>、<code>artifact_sha256</code> 和带 digest 的文件名。</p>
+            <span class="status done">已落地</span>
+          </article>
+          <article class="card">
+            <h3><span class="num">3</span>full 关注“覆盖证据”</h3>
+            <p><code>--full</code> 不等于把文字写得更长，而是先扫证据、再按结构写、最后反向检查每个要求是否有去处。</p>
+            <span class="status done">已落地</span>
+          </article>
+        </div>
+        <div class="callout warn">
+          <strong>最重要的诚实边界：</strong>Relay 只能尽量减少“可避免的信息差”。它不是完整 transcript，也不是 runtime checkpoint；如果原 session 已经被压缩、工具输出被截断，或远端状态后来变化，任何 Markdown 都不能凭空恢复看不见的事实。
+        </div>
+      </div>
+    </section>
+
+    <section id="problem" class="section alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">02 · 为什么要改</p>
+          <h2>旧版不是“不能用”，而是太容易把风险藏起来</h2>
+          <p class="lead">旧版 handoff 的优点是轻量、好读、容易跨 harness 使用。但当 Relay 成为 harness 的重要基础设施后，几个“靠 agent 自觉”的地方会放大成接力事故。</p>
+        </div>
+        <table class="compare">
+          <thead>
+            <tr><th>旧版常见情况</th><th>会发生什么</th><th>schema v2 的处理</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>文件名由 agent 自己拼</td>
+              <td>时间格式不一致、忘记 hash、slug 太长或含非法字符；下一棒难以判断文件是否被改过。</td>
+              <td>文件名由 helper 定稿：<code>relay-&lt;UTC时间&gt;-&lt;2~6词slug&gt;-&lt;digest12&gt;.md</code>。</td>
+            </tr>
+            <tr>
+              <td>“最新文件”通常被当成正确文件</td>
+              <td>目录里可能同时有 review、blocked、complete 或不同分支的 handoff；最新不代表适合当前任务。</td>
+              <td>pickup 先按路径、ID、任务、项目和完整性筛选；真正并列时必须问人。</td>
+            </tr>
+            <tr>
+              <td><code>--full</code> 只是“多写一点”</td>
+              <td>文字增加了，但关键用户要求、失败路线、旧验证结果和未知项仍可能遗漏或重复。</td>
+              <td>固定三阶段：Evidence sweep → Structured write → Reverse coverage audit。</td>
+            </tr>
+            <tr>
+              <td>hash、ID、作者含义混在一起</td>
+              <td>有人会把 hash 当成签名，以为它能证明“谁写的”“用户批准了”“内容正确”。</td>
+              <td>明确拆分：<code>relay_id</code> 是身份证/链路 ID；<code>artifact_sha256</code> 只负责发现内容变化。</td>
+            </tr>
+            <tr>
+              <td>只记录“做完了”</td>
+              <td>接收方不知道结果是否新鲜、Git 是否 dirty、远端副作用是否真正停止。</td>
+              <td>pickup 强制重新检查当前 workspace、引用、进程、job、远端状态，再分类。</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="quote">换句话说：这次不是为了让 handoff 看起来更复杂，而是把原来藏在模型记忆里的关键动作，变成可以检查、可以失败、可以重试的协议步骤。</div>
+      </div>
+    </section>
+
+    <section id="changes" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">03 · 具体改动</p>
+          <h2>Relay Skill 本次协议升级的六个核心变化</h2>
+          <p class="lead">每一项都对应一个实际问题：内容怎么写、文件怎么认、完整性怎么查、权限怎么理解、配置怎么改、旧文件怎么兼容。</p>
+        </div>
+        <div class="grid grid-2">
+          <article class="card">
+            <h3><span class="num">A</span>通用核心 + 按需模块</h3>
+            <p>每份 relay 先回答五件事：<strong>要达成什么、不能违反什么、现在是什么状态、第一步做什么、去哪里查证据</strong>。只有任务真的需要，才加入研究、Git、部署、实验、多 agent 等模块。</p>
+            <p class="small">好处：短任务不会被巨型模板拖慢，复杂任务又有地方放决策、失败路线和证据。</p>
+          </article>
+          <article class="card">
+            <h3><span class="num">B</span>模型写 body，helper 写 envelope</h3>
+            <p>agent 只负责 Markdown 正文。helper 读取正文后补齐 schema、时间、project root、working directory、Git 快照和完整性 digest。</p>
+            <p class="small">好处：模型忘记某个字段不会直接制造一份“看起来像真的”元数据。</p>
+          </article>
+          <article class="card">
+            <h3><span class="num">C</span>两个身份，两个问题</h3>
+            <p><code>relay_id</code> 是这一次交接的唯一身份证，也能串起 parent/child 链。<code>artifact_sha256</code> 是正文和元数据的规范化内容指纹，用来发现意外修改。</p>
+            <p class="small">hash 不是数字签名，不证明作者、权限、用户同意或业务正确性。</p>
+          </article>
+          <article class="card">
+            <h3><span class="num">D</span>文件名变成稳定定位器</h3>
+            <pre>relay-20260819T063045Z-reward-logging-a8c14f719d2e.md</pre>
+            <p>时间是 UTC 秒级；slug 是 2 到 6 个 ASCII 小词；末尾 12 位是完整 SHA-256 的前缀。新文件只用 <code>relay-*.md</code>，旧的 <code>handoff-*.md</code> 只作为兼容输入读取。</p>
+          </article>
+          <article class="card">
+            <h3><span class="num">E</span>pickup 先证明“它是谁”</h3>
+            <p>接收方使用 <code>validate --json --include-body</code>，在同一个受限文件描述符上读取并校验正文和 digest，避免“校验的是 A，随后读取的是 B”。</p>
+            <p class="small">然后再看当前 branch、HEAD、dirty 文件、测试新鲜度、进程、subagent、job 和远端状态。</p>
+          </article>
+          <article class="card">
+            <h3><span class="num">F</span>安全边界前移到 helper</h3>
+            <p>增加 symlink/普通文件检查、大小限制、UTF-8 和 JSON 重复 key 检查、深度限制、secret pattern 扫描、临时文件与 atomic 发布保护。</p>
+            <p class="small">这些保护不替代操作系统权限，也不把不可信 relay 变成可信指令；它们只是让错误更早、更明确地失败。</p>
+          </article>
+        </div>
+
+        <div class="diagram" style="margin-top: 18px;">
+          <div class="diagram-row">
+            <div class="diagram-node"><strong>模型 / agent</strong><span class="small">写语义 body<br>描述事实、证据、下一步</span></div>
+            <div class="diagram-arrow" aria-hidden="true">→</div>
+            <div class="diagram-node"><strong>relay_artifact.py</strong><span class="small">补元数据<br>算 ID、hash、落盘并校验</span></div>
+            <div class="diagram-arrow" aria-hidden="true">→</div>
+            <div class="diagram-node"><strong>下一棒 pickup</strong><span class="small">选对文件<br>验证并和现实对齐</span></div>
+          </div>
+          <p class="caption">责任分工：内容由 agent 理解，身份和完整性由工具计算，是否继续由接收方结合当前事实判断。</p>
+        </div>
+        <div class="card" style="margin-top: 18px;">
+          <h3>已完成能力矩阵</h3>
+          <table class="compare" style="box-shadow:none;">
+            <thead><tr><th>能力</th><th>现在已经做了什么</th><th>它解决的具体问题</th></tr></thead>
+            <tbody>
+              <tr><td>schema v2</td><td>固定 metadata、body heading、disposition，并对未知更高版本 fail closed。</td><td>不同 agent 不再各自猜一套格式。</td></tr>
+              <tr><td>身份与 digest</td><td>helper 生成 <code>relay_id</code>、规范化 SHA-256 和确定性文件名。</td><td>忘记 hash、ID 碰撞和内容被悄悄改动更容易被发现。</td></tr>
+              <tr><td>现实快照</td><td>记录 project root、cwd、branch、完整 HEAD、staged/unstaged/untracked/conflicted 状态。</td><td>下一棒不会只相信上一棒的主观记忆。</td></tr>
+              <tr><td>受保护读写</td><td>拒绝 symlink/非普通文件，限制大小和 JSON 深度，做 UTF-8/重复 key/secret pattern 检查；配置采用原子更新。</td><td>常见路径替换、畸形输入和半写文件更早失败。</td></tr>
+              <tr><td>兼容读取</td><td>新 pass 只生成 schema-v2 artifact；v1 和 Matt 兼容的 <code>handoff-*.md</code> 可降级读取并标记为未验证兼容输入。</td><td>旧项目能迁移，但旧格式不会被假装成 schema v2。</td></tr>
+              <tr><td>pickup 对齐</td><td>候选发现、bounded 验证、live-state reconciliation 和四种结果分类已写入协议。</td><td>“选中了一个文件”不再被误报成“安全恢复完成”。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="identity" class="section alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">04 · 身份与完整性</p>
+          <h2>为什么一定要把 ID 和 hash 分开</h2>
+          <p class="lead">它们看起来都像一串随机字符，但解决的是两个完全不同的问题。</p>
+        </div>
+        <div class="grid grid-2">
+          <article class="card">
+            <h3><span class="status info">relay_id</span>“这是哪一次交接？”</h3>
+            <ul>
+              <li>每次 pass 都由 helper 随机生成 opaque ID。</li>
+              <li>父子 handoff 用 <code>parent_relay_id</code> 连接。</li>
+              <li>即使两次正文完全一样，也仍然是两次不同交接。</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3><span class="status info">artifact_sha256</span>“内容有没有变？”</h3>
+            <ul>
+              <li>对解析后的 metadata + 规范化 body 计算完整 SHA-256。</li>
+              <li>文件名只展示前 12 位，pickup 仍验证完整 256 位。</li>
+              <li>它能发现意外修改，但不能证明作者或内容正确。</li>
+            </ul>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>一个生活化比喻：</strong>身份证号回答“你是哪一个人”，指纹回答“这份材料有没有被改过”。身份证和指纹都不能单独证明这个人说的每句话都是真的；Relay 里的两个字段也是同样的关系。
+        </div>
+        <div class="card flat">
+          <h3>schema v2 frontmatter 的最小样子</h3>
+          <pre>---
+schema_version: 2
+relay_id: "rly_6724bb249fa54aa099c99d68f314af3b"
+created: "2026-08-19T06:30:45Z"
+mode: "full"
+disposition: "continue"
+storage: "project"
+project_root: "/workspace/example-app"
+focus: "finish reward logging validation"
+slug: "reward-logging"
+artifact_sha256: "sha256:a8c14f719d2e..."
+---</pre>
+          <p class="small">这些字段由 helper 生成或校验。agent 不应该手抄 <code>relay_id</code>、时间戳和 digest。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="full" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">05 · --full</p>
+          <h2>full 模式不是“写长一点”，而是一条三阶段流水线</h2>
+          <p class="lead">目标不是复制整个聊天记录，而是让下一棒尽可能少猜、少重复劳动、少把旧结果当成新事实。</p>
+        </div>
+        <div class="flow">
+          <article class="flow-step">
+            <div class="flow-index">STAGE A</div>
+            <h3>Evidence sweep<br>先找证据</h3>
+            <p>重新看用户原话、计划、Git/workspace、命令和测试、runtime/外部状态、artifact、subagent、决策、失败路线和未知项。</p>
+          </article>
+          <article class="flow-step">
+            <div class="flow-index">STAGE B</div>
+            <h3>Structured write<br>按结构写</h3>
+            <p>先写一屏能启动工作的 resume brief，再写状态、决策、失败路线、验证、阻塞和场景模块，最后放明确的行动尾部。</p>
+          </article>
+          <article class="flow-step">
+            <div class="flow-index">STAGE C</div>
+            <h3>Reverse audit<br>反向查覆盖</h3>
+            <p>从每个原始要求反查：它在哪一节？完成声明有证据吗？验证是否已经过时？dirty/untracked 是否被隐藏？</p>
+          </article>
+        </div>
+        <div class="grid grid-2">
+          <article class="card">
+            <h3>full 的固定章节</h3>
+            <p class="small">按此顺序写，便于不同 harness 之间稳定阅读。</p>
+            <ol>
+              <li>Goal</li><li>Hard Constraints</li><li>Acceptance Criteria</li><li>Progress Ledger</li><li>Current State</li><li>Settled Decisions</li><li>Failed Approaches</li><li>Validation</li><li>Known Blockers</li><li>Open Questions</li><li>Explicit Next Step</li><li>References</li><li>Resume Prompt</li>
+            </ol>
+          </article>
+          <article class="card">
+            <h3>single-home 规则</h3>
+            <p>重要事实必须保留，但每个事实只在一个“主位置”完整展开。其他章节只引用它。</p>
+            <table class="compare" style="box-shadow:none;">
+              <tbody>
+                <tr><td>要求</td><td>主要放在 <code>Hard Constraints</code> 或 <code>Acceptance Criteria</code></td></tr>
+                <tr><td>当前事实</td><td>主要放在 <code>Current State</code>、账本或最具体的场景模块</td></tr>
+                <tr><td>第一步</td><td><code>Explicit Next Step</code> 只保留一个最佳动作</td></tr>
+                <tr><td>恢复入口</td><td><code>References</code> 指向文件、URL、commit、报告等 durable artifact</td></tr>
+              </tbody>
+            </table>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>为什么不把所有文字重复三遍？</strong>因为“更长”不等于“更完整”。重复会让接收方难以判断哪一处是最新版本，反而制造新的信息差。full 追求的是覆盖率、证据和可执行性，而不是字数。
+        </div>
+        <details>
+          <summary>full 会怎样记录“没有 blocker”和“我不知道”？</summary>
+          <div class="details-body">
+            <p>每个重要类别都必须显式写状态：<code>None known.</code> 表示已检查且没有已知项；<code>Not applicable.</code> 表示确实不适用；<code>Unknown.</code> 表示重要但暂时没有证据，并给最小验证动作；<code>Not checked.</code> 表示能查但还没查。</p>
+            <p>这样接收方能区分“上一棒检查过，没有问题”和“上一棒只是忘了写”。</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="pickup" class="section alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">06 · pickup</p>
+          <h2>接棒不再是“目录里拿最新”，而是先选、再验、再对齐</h2>
+          <p class="lead">文件里的内容属于不可信上下文。它可以帮助下一棒工作，但不能覆盖当前用户最新要求、system/developer 指令，或当前真实 workspace/远端状态。</p>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item">
+            <div class="timeline-label">STEP 1 · 定位</div>
+            <h3>优先使用明确线索</h3>
+            <p>顺序是：精确路径 / <code>relay_id</code> / 文件名 → 任务 hint → project / worktree / branch → schema / integrity → 时间。项目 <code>.relay/</code> 优先；temp 只看顶层，不递归扫描共享目录；每个位置最多保留 20 个候选。时间戳只在最后帮助排序。</p>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-label">STEP 2 · 完整性</div>
+            <h3>验证 schema、正文和完整 digest</h3>
+            <p>不接受缺字段、未知高版本、格式不合法、hash 不匹配的自动接力。多个候选真正并列时，必须询问，而不是自作主张。</p>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-label">STEP 3 · 现实对齐</div>
+            <h3>重新检查当前世界</h3>
+            <p>对齐当前 Git branch/HEAD/dirty 状态、引用文件是否仍在、验证结果是否新鲜、进程/subagent/job 是否还活着、远端副作用是否已确认。</p>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-label">STEP 4 · 分类</div>
+            <h3>给接收方一个明确状态</h3>
+            <p><strong>Aligned</strong>：relay 与现实相符；<strong>Drifted</strong>：能用但现实已变化；<strong>Orphaned</strong>：引用或上下文已失联；<strong>Invalid</strong>：结构/完整性不可信。</p>
+          </article>
+        </div>
+        <div class="diagram" style="margin-top: 28px;">
+          <div class="diagram-row">
+            <div class="diagram-node"><strong>候选 relay</strong><span class="small">路径 / ID / 任务 / 项目</span></div>
+            <div class="diagram-arrow" aria-hidden="true">→</div>
+            <div class="diagram-node"><strong>validate</strong><span class="small">schema + body + SHA-256</span></div>
+            <div class="diagram-arrow" aria-hidden="true">→</div>
+            <div class="diagram-node"><strong>snapshot 对齐</strong><span class="small">当前 workspace + 外部状态</span></div>
+          </div>
+          <p class="caption">验证与读取共享 bounded regular-file descriptor；接收方不会先验证一个版本、再打开另一个可能已被替换的版本。</p>
+        </div>
+        <div class="card" style="margin-top: 18px;">
+          <h3>compact / restore hook 的特殊规则</h3>
+          <p>hook 通常没有人在屏幕前回答问题，所以前一个 hook 应把精确的 <code>path</code>、<code>relay_id</code> 和 digest 交给后一个 hook。后一个 hook 直接验证这个文件，不必重新扫描目录。</p>
+          <table class="compare" style="box-shadow:none;">
+            <thead><tr><th>情况</th><th>非交互 hook 的动作</th></tr></thead>
+            <tbody>
+              <tr><td>拿到精确 path / ID / filename</td><td>验证指定 artifact；有效就继续。</td></tr>
+              <tr><td>没有 locator，但只有一个明确占优候选</td><td>验证并继续。</td></tr>
+              <tr><td>没有候选</td><td>返回 <code>no_candidate</code>，不修改项目。</td></tr>
+              <tr><td>两个或更多真正并列的有效候选</td><td>返回 <code>ambiguous</code>，列出最小候选集合，不提问、不选最新、不执行实质动作。</td></tr>
+            </tbody>
+          </table>
+          <p class="small">真正并列不是“文件时间接近”，而是任务、项目、worktree/branch、disposition、schema/integrity 都相同，又没有路径、ID 或 lineage 能区分。交互式 pickup 可以把 <code>ambiguous</code> 转成一个简短问题；hook 不可以。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="adapt" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">07 · 场景适配</p>
+          <h2>同一个核心，按任务加不同“插槽”</h2>
+          <p class="lead">通用核心保证接收方先能启动；场景模块保证它不会漏掉某类任务特有的风险。</p>
+        </div>
+        <table class="compare">
+          <thead><tr><th>任务类型</th><th>核心之外重点记录什么</th><th>下一步例子</th></tr></thead>
+          <tbody>
+            <tr><td>编码 / Git</td><td>改动文件、分支/commit、dirty/untracked、测试和构建、未提交风险</td><td>先查看当前 diff，再运行尚未通过的目标测试</td></tr>
+            <tr><td>研究 / deep research</td><td>问题范围、来源质量、证据与结论对应关系、未核实假设、检索缺口</td><td>先打开来源清单，核对最关键的三条结论</td></tr>
+            <tr><td>写作 / 评审</td><td>受众、语气、章节目标、已接受/拒绝的修改、引用或事实依据</td><td>先按评审意见编号逐条核对未完成项</td></tr>
+            <tr><td>数据 / 实验</td><td>数据版本、指标定义、脚本/seed、结果新鲜度、尚未跑的 ablation</td><td>先确认数据快照和指标口径，再复跑指定实验</td></tr>
+            <tr><td>部署 / 事故</td><td>外部副作用是 prepared/applied/confirmed 哪一种、操作 ID、回滚/清理义务</td><td>先查远端 receipt 或当前服务状态，避免重复执行</td></tr>
+            <tr><td>多 agent / 委派</td><td>owner、relay ID、状态、输出路径、证据质量、冲突和仍在运行的句柄</td><td>先收集或中断仍在运行的必需 agent，再合并结果</td></tr>
+          </tbody>
+        </table>
+        <div class="callout warn">
+          <strong>权限不会随 handoff 自动转移。</strong>relay 可以写“下一棒需要某个授权凭据”，但不能携带 secret，也不能让新 agent 因为看到一段 Markdown 就获得原 session 的权限。
+        </div>
+      </div>
+    </section>
+
+    <section id="research" class="section alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">08 · 社区与研究调研</p>
+          <h2>这不是凭空设计：本轮做了 20+ 个独立方向的地毯式对照</h2>
+          <p class="lead">调研重点不是照抄某个项目，而是比较它们怎样保存上下文、怎样恢复任务、怎样处理取消/副作用、怎样证明状态可信。</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card"><h3>直接相关的 handoff / coding agent</h3><div class="tag-list"><span class="tag">Matt Pocock handoff</span><span class="tag">Pi</span><span class="tag">Claude Code</span><span class="tag">Codex</span><span class="tag">OpenCode</span><span class="tag">Cursor</span><span class="tag">Cline / Roo</span><span class="tag">Aider</span><span class="tag">OpenHands</span><span class="tag">Continue</span></div></article>
+          <article class="card"><h3>协议 / agent 系统</h3><div class="tag-list"><span class="tag">OpenAI Agents SDK</span><span class="tag">MCP Tasks</span><span class="tag">A2A</span><span class="tag">durable agent systems</span><span class="tag">Kaseban baton</span><span class="tag">parent session</span><span class="tag">runtime compaction</span></div></article>
+          <article class="card"><h3>评测 / 人因 / 可靠性</h3><div class="tag-list"><span class="tag">ContinuityBench</span><span class="tag">TRACE</span><span class="tag">SRE incident handoff</span><span class="tag">provenance</span><span class="tag">atomic write</span><span class="tag">schema evolution</span><span class="tag">long-context research</span></div></article>
+        </div>
+        <div class="grid grid-2" style="margin-top: 16px;">
+          <article class="card">
+            <h3>调研最后留下的共同结论</h3>
+            <ol>
+              <li><strong>transcript、runtime checkpoint、workspace state、portable handoff 必须分开。</strong>把它们混成一个 Markdown 会让人误以为读完文件就能恢复所有运行时状态。</li>
+              <li><strong>更多上下文不自动等于更好的续作。</strong>如果没有结构、证据和优先级，长文只是把噪声传给下一棒。</li>
+              <li><strong>“agent 返回结果”不等于“结果已验证”。</strong>“artifact 已生成”也不等于“任务已完成”。</li>
+              <li><strong>取消任务不等于远端副作用停止。</strong>部署、云任务、消息和外部 API 必须记录 prepared/applied/confirmed。</li>
+              <li><strong>Markdown 适合做人类可读的语义交接层。</strong>它不应伪装成完整的 runtime snapshot，也不能隐式转移权限。</li>
+            </ol>
+          </article>
+          <article class="card">
+            <h3>这些调研结论如何落到 schema v2</h3>
+            <ul>
+              <li>用 <code>source_session</code> 做安全的历史入口，而不是复制整段 transcript。</li>
+              <li>用 <code>Validation</code>、<code>Known Blockers</code>、<code>Open Questions</code> 区分已证实、未完成和未知。</li>
+              <li>用 pickup 的现实对齐，阻止历史结果覆盖当前 workspace。</li>
+              <li>用 disposition（continue/review/delegate/blocked/complete/reference）表达接收行为，但始终服从用户最新指令。</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="implementation" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">09 · 代码落点</p>
+          <h2>升级不是一篇文档，而是一组相互配合的契约</h2>
+          <p class="lead">下面列出最值得查看的仓库文件。点击路径即可从本地直接打开对应文件。</p>
+        </div>
+        <table class="compare">
+          <thead><tr><th>文件</th><th>负责什么</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td><a href="skills/relay/SKILL.md"><code>skills/relay/SKILL.md</code></a></td><td>总入口：什么时候 pass/pickup、compact/full 选择、信任边界和兼容策略</td><td><span class="status done">已更新</span></td></tr>
+            <tr><td><a href="skills/relay/references/handoff-v2.md"><code>references/handoff-v2.md</code></a></td><td>Relay handoff artifact（schema v2）的 frontmatter、文件名、正文章节、disposition 和版本演进契约</td><td><span class="status done">已更新</span></td></tr>
+            <tr><td><a href="skills/relay/references/full-mode.md"><code>references/full-mode.md</code></a></td><td><code>--full</code> 的 evidence sweep、structured write、reverse audit 和 single-home 规则</td><td><span class="status done">已更新</span></td></tr>
+            <tr><td><a href="skills/relay/references/pickup-protocol.md"><code>references/pickup-protocol.md</code></a></td><td>候选选择、验证、现实对齐、Aligned/Drifted/Orphaned/Invalid 分类</td><td><span class="status done">已更新</span></td></tr>
+            <tr><td><a href="skills/relay/references/relay-v2.schema.json"><code>relay-v2.schema.json</code></a></td><td>schema v2 的机器可读 metadata 数据模型；helper 还会做 schema 之外的严格检查</td><td><span class="status done">已新增</span></td></tr>
+            <tr><td><a href="skills/relay/scripts/relay_artifact.py"><code>scripts/relay_artifact.py</code></a></td><td>快照、配置、创建、读取、验证、hash、原子发布和安全边界的实现</td><td><span class="status partial">已实现，仍有待修项</span></td></tr>
+            <tr><td><a href="tests/test_relay_artifact.py"><code>tests/test_relay_artifact.py</code></a></td><td>artifact helper 的行为、安全边界、兼容性和并发/异常回归测试</td><td><span class="status done">62 项通过</span></td></tr>
+            <tr><td><a href="tests/check_relay_contracts.py"><code>tests/check_relay_contracts.py</code></a></td><td>文档、schema、命令入口和 fixture 之间的契约检查</td><td><span class="status done">通过</span></td></tr>
+          </tbody>
+        </table>
+        <div class="card" style="margin-top: 16px;">
+          <h3>最常用的命令路径</h3>
+          <pre># 先获取当前项目事实快照
+python skills/relay/scripts/relay_artifact.py snapshot --project-root .
+
+# 生成 full handoff（通常由 /relay-pass --full 驱动）
+/relay-pass --full 继续完成 reward logging
+
+# 接棒时验证并选择候选
+/relay-pickup reward logging
+
+# 直接验证某个文件，正文也一并返回给接收方
+python skills/relay/scripts/relay_artifact.py validate \
+  --path .relay/relay-20260819T063045Z-reward-logging-a8c14f719d2e.md \
+  --json --include-body</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="verification" class="section alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">10 · 验证</p>
+          <h2>目前能用证据确认什么</h2>
+          <p class="lead">这些是已经实际运行过的检查，不是“理论上应该能过”。</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card"><h3><span class="status done">PASS</span>契约与语法</h3><p><code>python tests/check_relay_contracts.py</code></p><p><code>py_compile</code>、JSON Schema smoke test、<code>git diff --check</code> 均通过。</p></article>
+          <article class="card"><h3><span class="status done">PASS</span>helper 回归</h3><p><code>PYTHONDONTWRITEBYTECODE=1 python -m unittest -v tests/test_relay_artifact.py</code></p><p>共 67 个测试通过，包含格式、hash、权限、symlink、临时文件、深层 JSON、路径异常、根目录替换和并发相关边界。</p></article>
+          <article class="card"><h3><span class="status done">PASS</span>技能入口</h3><p>relay、relay-pass、relay-pickup、relay-set 四个 skill 均通过官方 quick validator。</p><p>fresh-agent compact/full forward test 能生成可验证 artifact；多候选和 hash mismatch pickup 行为符合预期。</p></article>
+        </div>
+        <div class="card" style="margin-top: 16px;">
+          <h3>forward test 里特别验证了什么</h3>
+          <ul>
+            <li>full handoff 能识别历史测试结果已过时，而不是把旧结果当成当前事实。</li>
+            <li>能识别 live workspace 与历史记录冲突。</li>
+            <li>能保留用户后续覆盖的离线、标准库、精确 2 MiB 等硬要求。</li>
+            <li>能记录 dirty test、untracked file、delegated report、缺少 <code>pytest</code> 等真实状态。</li>
+            <li>能把 BOM、重复 ID、货币检查和文件大小检查明确列为未完成，而不是假装全部完成。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">11 · 还没完成的部分</p>
+          <h2>五项审查问题：四项已修复，一项仍需加强</h2>
+          <p class="lead">上一轮审查指出了五个问题。本轮已经修复其中四项并加入回归测试；项目根目录/祖先目录的竞态替换仍需要更强的 descriptor 绑定，报告继续保留这个边界。</p>
+        </div>
+        <table class="compare risk-table">
+          <thead><tr><th>状态 / 级别</th><th>问题 / 触发条件</th><th>实际影响</th><th>当前处理</th><th>下一步</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status partial">仍需加强</span><br><span class="risk-mid">中</span></td><td>项目根目录 ancestor substitution<br><span class="small">目录检查后被替换成 symlink</span></td><td>极端竞态下 artifact/config 仍可能被写进攻击者选择的目录。</td><td>已增加 root 身份复核、最终目录身份检查和回归测试；已复现的替换时序会失败关闭。</td><td>继续改为保存并使用 project root descriptor，同时绑定所有祖先目录身份。</td></tr>
+            <tr><td><span class="status done">已修复</span><br><span class="risk-mid">中</span></td><td>stdout 编码失败发生在发布之后<br><span class="small">非 ASCII root + ASCII strict stdout</span></td><td>过去会让 CLI 看起来失败，重试可能产生重复 handoff。</td><td>JSON 输出改为 ASCII-safe，并增加非 ASCII project root 回归测试。</td><td>保留回归测试；后续可再统一人类可读输出的编码策略。</td></tr>
+            <tr><td><span class="status done">已修复</span><br><span class="risk-low">低</span></td><td>config 临时文件清理没有 ownership 标记<br><span class="small">临时名恰好已存在</span></td><td>过去异常清理可能删除并非本次调用创建的文件。</td><td>增加 <code>temp_created</code>，只有本次成功创建临时文件后才清理。</td><td>保留占用临时名的回归测试。</td></tr>
+            <tr><td><span class="status done">已修复</span><br><span class="risk-low">低</span></td><td>open 后 fstat 失败可能泄漏 fd<br><span class="small">导入式长期进程反复触发异常</span></td><td>过去文件描述符会逐步累积，最终可能耗尽。</td><td>open/fstat 异常路径和目录 fsync 都在 finally 中关闭 fd，并增加回归测试。</td><td>继续在其他平台运行导入式 fd 计数测试。</td></tr>
+            <tr><td><span class="status done">已修复</span><br><span class="risk-low">低</span></td><td>路径解析异常没有统一转成 RelayError<br><span class="small">symlink loop 或异常 <code>~user</code></span></td><td>过去会出现 traceback，而不是稳定的 JSON/CLI 错误。</td><td>集中使用 <code>resolve_path()</code>，将 <code>OSError</code>/<code>RuntimeError</code> 转为 RelayError，并加入 symlink-loop 测试。</td><td>继续覆盖平台特有的路径错误。</td></tr>
+          </tbody>
+        </table>
+        <div class="callout danger">
+          <strong>结论：</strong>当前实现可以称为“Relay Skill 已完成一次 schema v2 协议升级，并修复了上一轮审查指出的四个异常/资源问题”，不能称为“所有竞态和异常路径已经封死”。根目录 descriptor 绑定仍应在更高风险 harness 前完成。
+        </div>
+        <div class="callout warn">
+          <strong>平台与检测边界：</strong>SHA-256 只证明完整性，不是真实性、作者认证或用户批准；Relay 正文始终是不可信上下文，不能覆盖 system/developer 指令或用户最新要求。secret scan 是常见模式护栏，不是完整 DLP。当前也没有完成 Windows ACL 隐私和 directory-fsync 持久性的端到端跨平台证明。
+        </div>
+
+        <div class="section-head" style="margin-top: 46px;">
+          <h2>还有一些事情，目前没有统计证据</h2>
+        </div>
+        <div class="grid grid-2">
+          <article class="card"><h3><span class="status partial">尚未证明</span>full 一定优于 compact</h3><p>设计上 full 会覆盖更多证据，但还没有在足够多模型、harness 和任务类型上做对照实验，不能把设计目标当成测量结论。</p></article>
+          <article class="card"><h3><span class="status partial">尚未证明</span>Relay 一定提高最终成功率</h3><p>目前有 forward test 和单元测试证明协议行为，但没有证明它在所有真实任务里都提升最终完成率、减少总成本或减少返工。</p></article>
+          <article class="card"><h3><span class="status partial">尚未证明</span>所有模型都能同样遵守</h3><p>协议约束能减少忘记字段的机会，但模型仍可能写错事实、漏掉证据或误判下一步；helper 不能验证语义真伪。</p></article>
+          <article class="card"><h3><span class="status partial">尚未证明</span>“100% 接力”可实现</h3><p>字面意义的 100% 恢复需要完整 transcript、runtime checkpoint 和没有变化的外部世界。Relay 的目标是零可避免信息差，不是违反信息论。</p></article>
+        </div>
+        <div class="card" style="margin-top: 16px;">
+          <h3>证据等级怎么读</h3>
+          <table class="compare" style="box-shadow:none;">
+            <thead><tr><th>证据</th><th>能支持的结论</th><th>不能推出的结论</th></tr></thead>
+            <tbody>
+              <tr><td>62 个单元测试 + contract checks</td><td>列出的输入和故障场景，在当前环境下得到预期行为。</td><td>所有操作系统、文件系统、并发极端条件和生产部署都安全。</td></tr>
+              <tr><td>fresh-agent compact/full forward test</td><td>新 agent 能按协议读取示例 handoff，识别历史/现场冲突并保留硬约束。</td><td>所有模型、任务类型、上下文长度都同样有效。</td></tr>
+              <tr><td>社区项目与论文调研</td><td>提供设计原则和风险线索，解释为什么要分层、验 fresh state、记录 unknown。</td><td>证明 Relay 在真实业务中已经提高完成率或降低成本。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="decision" class="section alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">12 · 什么时候用它</p>
+          <h2>一张简单的选择表</h2>
+        </div>
+        <table class="compare">
+          <thead><tr><th>你的情况</th><th>优先选择</th><th>原因</th></tr></thead>
+          <tbody>
+            <tr><td>同一个 runtime，想继续同一段连贯对话</td><td><strong>native resume / native compact</strong></td><td>runtime 可以保留更多原始上下文，保真度通常最高。</td></tr>
+            <tr><td>同一 runtime 里要分叉一个独立方向</td><td><strong>native fork</strong></td><td>仍然保留 transcript，但把工作线分开。</td></tr>
+            <tr><td>跨 session、模型、harness、目录、角色或人员</td><td><strong>Relay compact/full</strong></td><td>需要一个人类可读、可审查、可独立存活的语义入口。</td></tr>
+            <tr><td>需要证明文件没有被意外改动</td><td><strong>Relay handoff artifact（schema v2）</strong></td><td>helper 生成完整 digest，pickup 可以验证。</td></tr>
+            <tr><td>需要恢复工具轨迹、图状态或精确运行时变量</td><td><strong>runtime checkpoint</strong></td><td>Relay 不伪装成 runtime snapshot；Markdown 只能提供语义线索和引用。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="section-kicker">13 · 术语翻译</p>
+          <h2>把几个容易混淆的词说人话</h2>
+        </div>
+        <div class="grid grid-3">
+          <article class="card"><h3>handoff / relay</h3><p>交接单。告诉下一棒目标、边界、现在做到哪、下一步怎么开始。</p></article>
+          <article class="card"><h3>artifact</h3><p>已经落盘、可以被别人读取和验证的交接文件，而不是模型脑中的草稿。</p></article>
+          <article class="card"><h3>envelope</h3><p>文件外层的元数据：ID、时间、Git、模式、digest。schema v2 envelope 由 helper 生成。</p></article>
+          <article class="card"><h3>disposition</h3><p>这份交接希望下一棒做什么：继续、审查、委派、解除阻塞、完成记录或只作参考。</p></article>
+          <article class="card"><h3>drift</h3><p>交接生成后，现实已经变了：文件、分支、测试、远端状态或用户要求不再完全一致。</p></article>
+          <article class="card"><h3>single-home</h3><p>一个重要事实只在一个地方完整展开，别处引用它，避免多份版本互相打架。</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-line">
+        <span><strong>Relay Skill 升级说明</strong> · handoff wire schema v2 · 本地单文件报告</span>
+        <span>生成日期：2026-08-22 · 不依赖网络资源</span>
+      </div>
+      <p style="margin-top: 16px;">这份报告解释的是本轮仓库改动和当前证据。它不会替代协议文档、测试输出或当前 workspace 的现场检查。</p>
+    </div>
+  </footer>
+</body>
+</html>
