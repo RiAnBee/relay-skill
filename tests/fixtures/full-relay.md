@@ -46,11 +46,11 @@ Patch the wrapper call site for the missing reward field, then rerun the targete
 
 ## Known Blockers
 
-- None confirmed. Validation still needs to run after the patch.
+- None known. Validation still needs to run after the patch.
 
 ## Open Questions
 
-- Should a second smoke test be run if the targeted regression passes?
+- None known.
 
 ## Files Changed
 

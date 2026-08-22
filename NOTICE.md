@@ -34,4 +34,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-Relay extends the original lightweight handoff idea with pickup behavior, semantic timestamped filenames, configurable storage defaults, stronger default handoff structure, smarter pickup selection, and a maximum-fidelity `--full` mode.
+Relay extends the original lightweight handoff idea with pickup behavior,
+project-local storage, a versioned universal-core plus scenario-module format,
+deterministic artifact identity and integrity checks, maximum-fidelity evidence
+auditing, and live-state reconciliation.

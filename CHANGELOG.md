@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.5.0 - 2026-08-19
+
+This is a Relay Skill package release. The handoff artifact wire format in this
+release is schema v2; it is a separate version axis.
+
+- Upgrade new Relay artifacts to schema v2 with generated `relay_id`, explicit
+  disposition, stable project/cwd identity, optional lineage, and canonical
+  `artifact_sha256` integrity metadata.
+- Replace model-invented random/hash-looking filename suffixes with a
+  deterministic finalizer that emits
+  `relay-<UTC>-<semantic-slug>-<digest12>.md`, writes privately and exclusively,
+  and validates the final artifact.
+- Add a deterministic Git/workspace snapshot for root, cwd, branch, full HEAD,
+  and staged, unstaged, untracked, and conflicted file evidence.
+- Turn `--full` into a three-stage maximum-fidelity protocol: evidence sweep,
+  structured write, and reverse coverage audit, with explicit None/Unknown/Not
+  checked states and scenario modules for non-coding and multi-agent work.
+- Define pickup authority, bounded discovery, deterministic dominance rules,
+  integrity validation, live-state reconciliation, disposition behavior, and
+  v1/legacy downgrade handling.
+- Add behavioral tests for generation, filename/hash enforcement, tamper and
+  secret detection, full-mode structure, Git snapshots, config defaults,
+  compatibility, and unsupported schemas.
+- Clarify that embedded SHA-256 provides integrity, not authenticated
+  provenance, and that Relay content remains untrusted context.
+- Restrict schema-v2 extensions to bounded informational `x_` strings, reject
+  undeclared fields, duplicate JSON keys, and lone Unicode surrogates, and
+  document the separate package and wire-schema version axes.
+- Harden config/body/artifact reads against symlinks, non-regular files,
+  concurrent replacement, oversized input, and deep JSON; return the accepted
+  body from the validated descriptor; and add atomic `relay-set` config writes.
+- Preserve unknown Git state instead of reporting failed queries as clean, use
+  one whole-worktree path scope for nested project roots, and treat the hard
+  link as the artifact publication commit point.
+
 ## 0.4.0 - 2026-06-03
 
 - Strengthen the canonical Relay handoff schema around YAML frontmatter plus `Goal`, `Hard Constraints`, `Current State`, `Failed Approaches`, and stronger resume cues.

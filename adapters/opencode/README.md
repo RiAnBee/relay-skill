@@ -66,8 +66,12 @@ or explicit modes:
 Behavior notes:
 
 - Relay prefers project-local `.relay/` storage by default.
-- The default handoff should stay compact but preserve goal, hard constraints, current state, and failed approaches.
-- `--full` is the maximum-fidelity mode.
+- The default handoff stays compact and always preserves goal, hard constraints,
+  current state, one explicit next step, and references. It adds failed
+  approaches when omitting them would mislead the receiver.
+- New passes use `skills/relay/scripts/relay_artifact.py`; install the entire
+  canonical skill directory so references and the helper remain available.
+- `--full` runs evidence sweep, structured write, and reverse coverage audit.
 - Smart `/relay` remains available, but in a fresh ambiguous session Relay should prefer a short clarification over silently loading an old handoff.
 
 ## Notes
